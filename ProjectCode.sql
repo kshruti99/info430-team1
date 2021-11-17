@@ -21,6 +21,8 @@ As stated in lecture, grading will be based on the student's ability to leverage
 -- may need to double check nulls and not nulls
 -- database name: INFO_430_Proj_01
 
+USE INFO_430_Proj_01
+
 CREATE TABLE tblEMPLOYEE_TYPE
 (EmployeeTypeID INT IDENTITY(1,1) primary key,
 EmployeeTypeName varchar(50) not null)
@@ -41,7 +43,7 @@ GO
 
 CREATE TABLE tblROUTE_EMPLOYEE
 (Route_EmployeeID INT IDENTITY(1,1) primary key,
-RouteID INT FOREIGN KEY REFERENCES tblROUTE (RouteID) not null,
+RouteID INT FOREIGN KEY REFERENCES tblROUTE (RouteID) null,
 EmployeeID INT FOREIGN KEY REFERENCES tblEMPLOYEE (EmployeeID) not null)
 GO
 
@@ -76,7 +78,7 @@ GO
 CREATE TABLE tblSTOP
 (StopID INT IDENTITY(1,1) primary key,
 NeighborhoodID INT FOREIGN KEY REFERENCES tblNEIGHBORHOOD (NeighborhoodID) not null,
-StopTypeID INT FOREIGN KEY REFERENCES tblSTOP_TYPE (StopTypeID) not null,
+DirectionID INT FOREIGN KEY REFERENCES tblSTOP_DIRECTION (DirectionID) not null,
 StopName varchar(50) not null)
 GO
 
