@@ -21,84 +21,84 @@ As stated in lecture, grading will be based on the student's ability to leverage
 -- may need to double check nulls and not nulls
 -- database name: INFO_430_Proj_01
 
-CREATE TABLE EMPLOYEE_TYPE
+CREATE TABLE tblEMPLOYEE_TYPE
 (EmployeeTypeID INT IDENTITY(1,1) primary key,
 EmployeeTypeName varchar(50) not null)
 GO
 
-CREATE TABLE EMPLOYEE
+CREATE TABLE tblEMPLOYEE
 (EmployeeID INT IDENTITY(1,1) primary key,
-EmployeeTypeID INT FOREIGN KEY REFERENCES EMPLOYEE_TYPE (EmployeeTypeID) not null,
+EmployeeTypeID INT FOREIGN KEY REFERENCES tblEMPLOYEE_TYPE (EmployeeTypeID) not null,
 EmployeeFirstName varchar(50) not null,
 EmployeeLastName varchar(50) not null,
 EmployeeDOB Date not null)
 GO
 
-CREATE TABLE ROUTE
+CREATE TABLE tblROUTE
 (RouteID INT IDENTITY(1,1) primary key,
 RouteName varchar(50) not null)
 GO
 
-CREATE TABLE ROUTE_EMPLOYEE
+CREATE TABLE tblROUTE_EMPLOYEE
 (Route_EmployeeID INT IDENTITY(1,1) primary key,
-RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null,
-EmployeeID INT FOREIGN KEY REFERENCES EMPLOYEE (EmployeeID) not null)
+RouteID INT FOREIGN KEY REFERENCES tblROUTE (RouteID) not null,
+EmployeeID INT FOREIGN KEY REFERENCES tblEMPLOYEE (EmployeeID) not null)
 GO
 
-CREATE TABLE VEHICLE_TYPE
+CREATE TABLE tblVEHICLE_TYPE
 (VehicleTypeID INT IDENTITY(1,1) primary key,
 VehicleTypeName varchar(50) not null)
 GO
 
-CREATE TABLE VEHICLE
+CREATE TABLE tblVEHICLE
 (VehicleID INT IDENTITY(1,1) primary key,
-VehicleTypeID INT FOREIGN KEY REFERENCES VEHICLE_TYPE (VehicleTypeID) not null,
-RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null)
+VehicleTypeID INT FOREIGN KEY REFERENCES tblVEHICLE_TYPE (VehicleTypeID) not null,
+RouteID INT FOREIGN KEY REFERENCES tblROUTE (RouteID) not null)
 GO
 
-CREATE TABLE TRANSPORTATION
+CREATE TABLE tblTRANSPORTATION
 (TransportationID INT IDENTITY(1,1) primary key,
-VehicleID INT FOREIGN KEY REFERENCES VEHICLE (VehicleID) not null,
-RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null,
-EmployeeID INT FOREIGN KEY REFERENCES EMPLOYEE (EmployeeID) not null)
+VehicleID INT FOREIGN KEY REFERENCES tblVEHICLE (VehicleID) not null,
+RouteID INT FOREIGN KEY REFERENCES tblROUTE (RouteID) not null,
+EmployeeID INT FOREIGN KEY REFERENCES tblEMPLOYEE (EmployeeID) not null)
 GO
 
-CREATE TABLE NEIGHBORHOOD
+CREATE TABLE tblNEIGHBORHOOD
 (NeighborhoodID INT IDENTITY(1,1) primary key,
 NeighborhoodName varchar(50) not null)
 GO
 
-CREATE TABLE STOP_DIRECTION
+CREATE TABLE tblSTOP_DIRECTION
 (DirectionID INT IDENTITY(1,1) primary key,
 DirectionName varchar(50) not null)
 GO
 
-CREATE TABLE STOP
+CREATE TABLE tblSTOP
 (StopID INT IDENTITY(1,1) primary key,
-NeighborhoodID INT FOREIGN KEY REFERENCES NEIGHBORHOOD (NeighborhoodID) not null,
-StopTypeID INT FOREIGN KEY REFERENCES STOP_TYPE (StopTypeID) not null,
+NeighborhoodID INT FOREIGN KEY REFERENCES tblNEIGHBORHOOD (NeighborhoodID) not null,
+StopTypeID INT FOREIGN KEY REFERENCES tblSTOP_TYPE (StopTypeID) not null,
 StopName varchar(50) not null)
 GO
 
-CREATE TABLE PASSENGER_TYPE
+CREATE TABLE tblPASSENGER_TYPE
 (PassengerTypeID INT IDENTITY(1,1) primary key,
 PassengerTypeName varchar(50) not null)
 GO
 
-CREATE TABLE PASSENGER
+CREATE TABLE tblPASSENGER
 (PassengerID INT IDENTITY(1,1) primary key,
-PassengerTypeID INT FOREIGN KEY REFERENCES PASSENGER_TYPE (PassengerTypeID) not null,
+PassengerTypeID INT FOREIGN KEY REFERENCES tblPASSENGER_TYPE (PassengerTypeID) not null,
 PassengerFirstName varchar(50) not null,
 PassengerLastName varchar(50) not null,
 PassengerDOB Date not null,
 PassengerEmail varchar(50) not null)
 GO
 
-CREATE TABLE BOARDING
+CREATE TABLE tblBOARDING
 (BoardingID INT IDENTITY(1,1) primary key,
-TransportationID INT FOREIGN KEY REFERENCES TRANSPORTATION (TransportationID) not null,
-PassengerID INT FOREIGN KEY REFERENCES PASSENGER (PassengerID) not null,
-StopID INT FOREIGN KEY REFERENCES STOP (StopID) not null)
+TransportationID INT FOREIGN KEY REFERENCES tblTRANSPORTATION (TransportationID) not null,
+PassengerID INT FOREIGN KEY REFERENCES tblPASSENGER (PassengerID) not null,
+StopID INT FOREIGN KEY REFERENCES tblSTOP (StopID) not null)
 GO
 
 
