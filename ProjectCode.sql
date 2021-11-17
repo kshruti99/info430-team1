@@ -68,7 +68,7 @@ CREATE TABLE NEIGHBORHOOD
 NeighborhoodName varchar(50) not null)
 GO
 
-CREATE TABLE DIRECTION
+CREATE TABLE STOP_DIRECTION
 (DirectionID INT IDENTITY(1,1) primary key,
 DirectionName varchar(50) not null)
 GO
