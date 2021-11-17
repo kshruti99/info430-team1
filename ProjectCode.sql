@@ -68,15 +68,16 @@ CREATE TABLE NEIGHBORHOOD
 NeighborhoodName varchar(50) not null)
 GO
 
-CREATE TABLE STOP_TYPE
-(StopTypeID INT IDENTITY(1,1) primary key,
-StopName varchar(50) not null)
+CREATE TABLE Direction
+(DirectionID INT IDENTITY(1,1) primary key,
+DirectionName varchar(50) not null)
 GO
 
 CREATE TABLE STOP
 (StopID INT IDENTITY(1,1) primary key,
 NeighborhoodID INT FOREIGN KEY REFERENCES NEIGHBORHOOD (NeighborhoodID) not null,
-StopTypeID INT FOREIGN KEY REFERENCES STOP_TYPE (StopTypeID) not null)
+StopTypeID INT FOREIGN KEY REFERENCES STOP_TYPE (StopTypeID) not null,
+StopName varchar(50) not null)
 GO
 
 CREATE TABLE PASSENGER_TYPE
