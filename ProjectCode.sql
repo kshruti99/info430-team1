@@ -28,7 +28,8 @@ GO
 CREATE TABLE EMPLOYEE
 (EmployeeID INT IDENTITY(1,1) primary key,
 EmployeeTypeID INT FOREIGN KEY REFERENCES EMPLOYEE_TYPE (EmployeeTypeID) not null,
-EmployeeName varchar(50) not null,
+EmployeeFirstName varchar(50) not null,
+EmployeeLastName varchar(50) not null,
 EmployeeDOB Date not null)
 GO
 
@@ -85,7 +86,8 @@ GO
 CREATE TABLE PASSENGER
 (PassengerID INT IDENTITY(1,1) primary key,
 PassengerTypeID INT FOREIGN KEY REFERENCES PASSENGER_TYPE (PassengerTypeID) not null,
-PassengerName varchar(50) not null,
+PassengerFirstName varchar(50) not null,
+PassengerLastName varchar(50) not null,
 PassengerDOB Date not null,
 PassengerEmail varchar(50) not null)
 GO
