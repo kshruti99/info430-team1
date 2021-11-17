@@ -18,6 +18,11 @@ As stated in lecture, grading will be based on the student's ability to leverage
 * variables
 */
 
+CREATE TABLE EMPLOYEE_TYPE
+(EmployeeTypeID INT IDENTITY(1,1) primary key,
+EmployeeTypeName varchar(50) not null)
+GO
+
 CREATE TABLE EMPLOYEE
 (EmployeeID INT IDENTITY(1,1) primary key,
 EmployeeTypeID INT FOREIGN KEY REFERENCES EMPLOYEE_TYPE (EmployeeTypeID) not null,
@@ -25,9 +30,9 @@ EmployeeName varchar(50) not null,
 EmployeeDOB Date not null)
 GO
 
-CREATE TABLE EMPLOYEE_TYPE
-(EmployeeTypeID INT IDENTITY(1,1) primary key,
-EmployeeTypeName varchar(50) not null)
+CREATE TABLE ROUTE
+(RouteID INT IDENTITY(1,1) primary key,
+RouteName varchar(50) not null)
 GO
 
 CREATE TABLE ROUTE_EMPLOYEE
@@ -36,16 +41,9 @@ RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null,
 EmployeeID INT FOREIGN KEY REFERENCES EMPLOYEE (EmployeeID) not null)
 GO
 
-CREATE TABLE ROUTE
-(RouteID INT IDENTITY(1,1) primary key,
-RouteName varchar(50) not null)
-GO
-
-CREATE TABLE TRANSPORTATION
-(TransportationID INT IDENTITY(1,1) primary key,
-VehicleID INT FOREIGN KEY REFERENCES VEHICLE (VehicleID) not null,
-RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null,
-EmployeeID INT FOREIGN KEY REFERENCES EMPLOYEE (EmployeeID) not null)
+CREATE TABLE VEHICLE_TYPE
+(VehicleTypeID INT IDENTITY(1,1) primary key,
+VehicleTypeName varchar(50) not null)
 GO
 
 CREATE TABLE VEHICLE
@@ -54,9 +52,11 @@ VehicleTypeID INT FOREIGN KEY REFERENCES VEHICLE_TYPE (VehicleTypeID) not null,
 RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null)
 GO
 
-CREATE TABLE VEHICLE_TYPE
-(VehicleTypeID INT IDENTITY(1,1) primary key,
-VehicleTypeName varchar(50) not null)
+CREATE TABLE TRANSPORTATION
+(TransportationID INT IDENTITY(1,1) primary key,
+VehicleID INT FOREIGN KEY REFERENCES VEHICLE (VehicleID) not null,
+RouteID INT FOREIGN KEY REFERENCES ROUTE (RouteID) not null,
+EmployeeID INT FOREIGN KEY REFERENCES EMPLOYEE (EmployeeID) not null)
 GO
 
 CREATE TABLE NEIGHBORHOOD
@@ -73,6 +73,17 @@ CREATE TABLE BUSSTOP
 (BusStopID INT IDENTITY(1,1) primary key,
 NeighborhoodID INT FOREIGN KEY REFERENCES NEIGHBORHOOD (NeighborhoodID) not null,
 BusStopTypeID INT FOREIGN KEY REFERENCES BUSSTOP_TYPE (BusStopTypeID) not null)
+GO
+
+CREATE TABLE PASSENGER_TYPE
+(PassengerTypeID INT IDENTITY(1,1) primary key,
+PassengerTypeName varchar(50) not null)
+GO
+
+CREATE TABLE PASSENGER
+(PassengerID INT IDENTITY(1,1) primary key,
+PassengerTypeID INT FOREIGN KEY REFERENCES PASSENGER_TYPE (PassengerTypeID) not null,
+PassengerName varchar(50) not null)
 GO
 
 CREATE TABLE BOARDING
