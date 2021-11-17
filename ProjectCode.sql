@@ -20,6 +20,7 @@ As stated in lecture, grading will be based on the student's ability to leverage
 
 -- may need to double check nulls and not nulls
 -- database name: INFO_430_Proj_01
+
 CREATE TABLE EMPLOYEE_TYPE
 (EmployeeTypeID INT IDENTITY(1,1) primary key,
 EmployeeTypeName varchar(50) not null)
@@ -67,15 +68,15 @@ CREATE TABLE NEIGHBORHOOD
 NeighborhoodName varchar(50) not null)
 GO
 
-CREATE TABLE BUSSTOP_TYPE
-(BusStopTypeID INT IDENTITY(1,1) primary key,
-BusStopName varchar(50) not null)
+CREATE TABLE STOP_TYPE
+(StopTypeID INT IDENTITY(1,1) primary key,
+StopName varchar(50) not null)
 GO
 
 CREATE TABLE BUSSTOP
-(BusStopID INT IDENTITY(1,1) primary key,
+(StopID INT IDENTITY(1,1) primary key,
 NeighborhoodID INT FOREIGN KEY REFERENCES NEIGHBORHOOD (NeighborhoodID) not null,
-BusStopTypeID INT FOREIGN KEY REFERENCES BUSSTOP_TYPE (BusStopTypeID) not null)
+StopTypeID INT FOREIGN KEY REFERENCES STOP_TYPE (StopTypeID) not null)
 GO
 
 CREATE TABLE PASSENGER_TYPE
@@ -96,7 +97,7 @@ CREATE TABLE BOARDING
 (BoardingID INT IDENTITY(1,1) primary key,
 TransportationID INT FOREIGN KEY REFERENCES TRANSPORTATION (TransportationID) not null,
 PassengerID INT FOREIGN KEY REFERENCES PASSENGER (PassengerID) not null,
-BusStopID INT FOREIGN KEY REFERENCES BUSSTOP (BusStopID) not null)
+StopID INT FOREIGN KEY REFERENCES STOP (StopID) not null)
 GO
 
 
