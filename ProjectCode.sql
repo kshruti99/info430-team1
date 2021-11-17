@@ -19,6 +19,7 @@ As stated in lecture, grading will be based on the student's ability to leverage
 */
 
 -- may need to double check nulls and not nulls
+-- database name: INFO_430_Proj_01
 CREATE TABLE EMPLOYEE_TYPE
 (EmployeeTypeID INT IDENTITY(1,1) primary key,
 EmployeeTypeName varchar(50) not null)
