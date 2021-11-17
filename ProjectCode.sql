@@ -18,6 +18,7 @@ As stated in lecture, grading will be based on the student's ability to leverage
 * variables
 */
 
+-- may need to double check nulls and not nulls
 CREATE TABLE EMPLOYEE_TYPE
 (EmployeeTypeID INT IDENTITY(1,1) primary key,
 EmployeeTypeName varchar(50) not null)
