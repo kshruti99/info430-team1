@@ -84,7 +84,8 @@ GO
 CREATE TABLE PASSENGER
 (PassengerID INT IDENTITY(1,1) primary key,
 PassengerTypeID INT FOREIGN KEY REFERENCES PASSENGER_TYPE (PassengerTypeID) not null,
-PassengerName varchar(50) not null)
+PassengerName varchar(50) not null,
+PassengerDOB Date not null)
 GO
 
 CREATE TABLE BOARDING
