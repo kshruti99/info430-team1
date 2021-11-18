@@ -41,8 +41,8 @@ RETURN
 END
 
 EXEC GetDirectionID
-@????? = @D_Name,
-@????? = @D_ID OUTPUT
+@DirectionNamey = @D_Name,
+@Directiony = @D_ID OUTPUT
 
 IF @D_ID IS NULL
 BEGIN
