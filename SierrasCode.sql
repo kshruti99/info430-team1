@@ -5,7 +5,7 @@ values ('Northbound'), ('Southbound'), ('Westbound'), ('Eastbound')
 
 select * from tblPassenger_Type
 
-Create Procedure GetStopDirectionID
+Create Procedure GetDirectionID
 @DirectionNamey varchar(50),
 @Directiony INT OUTPUT
 AS
