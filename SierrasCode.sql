@@ -12,6 +12,13 @@ AS
 SET @Directiony = (SELECT DirectionID FROM tblSTOP_DIRECTION WHERE DirectionName = @DirectionNamey)
 GO
 
+Create Procedure GetNeighborhoodID
+@NeighborhoodNamey varchar(50),
+@Neighborhoody INT OUTPUT
+AS
+SET @Neighborhoody = (SELECT NeighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NeighborhoodNamey)
+GO
+
 /*
 Create Procedure GetStopID
 @StopNamey varchar(50),
