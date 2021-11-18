@@ -1,4 +1,4 @@
-Use INFO_430_Proj_01
+Use INFO_430_Proj_01;
 
 insert into tblSTOP_DIRECTION(DirectionName)
 values ('Northbound'), ('Southbound'), ('Westbound'), ('Eastbound')
@@ -43,7 +43,7 @@ EXEC GetNeighborhoodID
 IF @N_ID IS NULL
 BEGIN
 PRINT 'Neighborhood ID IS NULL'
-RAISERROR ('CHECK CUST ID', 11, 1)
+RAISERROR ('CHECK NEIGHBORHOOD ID', 11, 1)
 RETURN
 END
 
@@ -68,3 +68,28 @@ IF @@ERROR <> 0
 ELSE
  COMMIT TRAN T1
 GO
+
+-- synthetic transaction
+CREATE PROCEDURE Wrapper_INSERT_STOP
+@RUN INT
+AS
+    /*
+DECLARE @PROD_PK INT
+DECLARE @CUST_PK INT
+DECLARE @CUST_COUNT INT = (SELECT COUNT(*) FROM tblCUSTOMER)
+DECLARE @PROD_COUNT INT = (SELECT COUNT(*) FROM tblPRODUCT)
+*/
+DECLARE @NName varchar(30), @DName varchar(30), @SName varchar(30)
+
+WHILE @RUN > 0
+BEGIN
+--this is where csv data is inserted
+
+EXEC INSERT_STOP
+@N_Name = @NName,
+@D_Name  = @DName,
+@StopName  = @SName
+
+SET @RUN = @RUN -1
+
+END
