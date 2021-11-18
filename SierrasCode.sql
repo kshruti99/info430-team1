@@ -14,9 +14,10 @@ GO
 
 Create Procedure GetNeighborhoodID
 @NeighborhoodNamey varchar(50),
+@Zipy INT
 @Neighborhoody INT OUTPUT
 AS
-SET @Neighborhoody = (SELECT NeighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NeighborhoodNamey)
+SET @Neighborhoody = (SELECT NeighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NeighborhoodNamey AND ZipCode = @Zipy)
 GO
 
 /*
