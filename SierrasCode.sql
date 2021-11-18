@@ -73,17 +73,24 @@ GO
 CREATE PROCEDURE Wrapper_INSERT_STOP
 @RUN INT
 AS
-    /*
-DECLARE @PROD_PK INT
-DECLARE @CUST_PK INT
-DECLARE @CUST_COUNT INT = (SELECT COUNT(*) FROM tblCUSTOMER)
-DECLARE @PROD_COUNT INT = (SELECT COUNT(*) FROM tblPRODUCT)
-*/
+DECLARE @N_PK INT
+DECLARE @D_PK INT
+DECLARE @N_COUNT INT = (SELECT COUNT(*) FROM tblNEIGHBORHOOD)
+DECLARE @D_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
 DECLARE @NName varchar(30), @DName varchar(30), @SName varchar(30)
 
 WHILE @RUN > 0
 BEGIN
---this is where csv data is inserted
+--should i just start at one?
+SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+SET @NName = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+SET @D_PK = (SELECT RAND() * @D_COUNT + 1)
+SET @DName = (SELECT DirectionName FROM tblSTOP_DIRECTION WHERE DirectionID = @D_PK)
+
+--how to get stop name? from csv column?
+--SET @SName = 
+
 
 EXEC INSERT_STOP
 @N_Name = @NName,
