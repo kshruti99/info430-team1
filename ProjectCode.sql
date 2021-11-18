@@ -67,7 +67,8 @@ GO
 
 CREATE TABLE tblNEIGHBORHOOD
 (NeighborhoodID INT IDENTITY(1,1) primary key,
-NeighborhoodName varchar(50) not null)
+NeighborhoodName varchar(50) not null,
+ZipCode INT not null)
 GO
 
 CREATE TABLE tblSTOP_DIRECTION
