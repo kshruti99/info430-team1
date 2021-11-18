@@ -37,8 +37,8 @@ DECLARE
 @N_ID INT, @D_ID INT
 
 EXEC GetNeighborhoodID
-@????? = @N_Name,
-@????? = @N_ID OUTPUT
+@NeighborhoodNamey = @N_Name,
+@Neighborhoody = @N_ID OUTPUT
 
 IF @N_ID IS NULL
 BEGIN
