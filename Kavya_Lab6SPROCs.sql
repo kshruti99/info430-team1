@@ -6,6 +6,16 @@ SPROC - Insert into Passenger*/
 
 USE INFO_430_Proj_01
 
+IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_PEEPS_Customers')
+	BEGIN
+		DROP TABLE WORKING_PEEPS_Customers
+
+		SELECT TOP 7000 * 
+		INTO WORKING_PEEPS_Customers
+		FROM PEEPS.dbo.tblCUSTOMER
+	END
+
+
 
 CREATE PROCEDURE proj01_getPassengerTypeID 
 @PTName varchar(50), 
@@ -49,27 +59,35 @@ ELSE
 	COMMIT TRAN T1
 GO 
 
+exec insertPassenger
+@Firsty = 'Kavya', 
+@Lasty = 'Iyer', 
+@Birthy = '1999-02-11', 
+@Emaily = 'kavyai@uw.edu', 
+@ptypeName = 'Student'
+select * from tblPASSENGER
+
 
 -- write wrapper 
-CREATE PROCEDURE wrapper_insertPassenger
+ALTER PROCEDURE wrapper_insertPassenger
 @RUN INT
 AS
 DECLARE @PT_PK INT
 DECLARE @PT_COUNT INT = (SELECT COUNT(*) FROM TBLPASSENGER_TYPE)
 DECLARE @PEEP_PK INT
-DECLARE @PEEP_COUNT INT = (SELECT COUNT(*) FROM PEEPS.dbo.tblCUSTOMER)
+DECLARE @PEEP_COUNT INT = (SELECT COUNT(*) FROM WORKING_PEEPS_Customers)
 DECLARE @FNAME varchar(50), @LNAME varchar(50), @DOBBY DATE, @PEMAIL varchar(50), 
 @PASSTypName varchar(50)
 
 WHILE @RUN > 0 
 BEGIN 
 SET @PT_PK = (SELECT RAND() * @PT_COUNT + 1) 
-SET @PEEP_PK = (SELECT RAND () * @PEEP_COUNT + 1) 
+SET @PEEP_PK = (SELECT MIN(CustomerID) FROM WORKING_PEEPS_Customers) 
 SET @PASSTypName = (SELECT PassengerTypeName from tblPASSENGER_TYPE WHERE PassengerTypeID = @PT_PK)
-SET @FNAME = (SELECT CustomerFName FROM PEEPS.dbo.tblCUSTOMER WHERE CustomerID = @PEEP_PK)
-SET @LNAME = (SELECT CUSTOMERLNAME FROM PEEPS.dbo.tblCUSTOMER WHERE CustomerID = @PEEP_PK)
-SET @DOBBY = (SELECT DATEOFBIRTH FROM PEEPS.dbo.tblCUSTOMER WHERE CustomerID = @PEEP_PK)
-SET @PEMAIL = (SELECT EMAIL FROM PEEPS.dbo.tblCUSTOMER WHERE CustomerID = @PEEP_PK)
+SET @FNAME = (SELECT CustomerFName FROM WORKING_PEEPS_Customers WHERE CustomerID = @PEEP_PK)
+SET @LNAME = (SELECT CUSTOMERLNAME FROM WORKING_PEEPS_Customers WHERE CustomerID = @PEEP_PK)
+SET @DOBBY = (SELECT DATEOFBIRTH FROM WORKING_PEEPS_Customers WHERE CustomerID = @PEEP_PK)
+SET @PEMAIL = (SELECT EMAIL FROM WORKING_PEEPS_Customers WHERE CustomerID = @PEEP_PK)
 
 
 EXEC insertPassenger
@@ -79,10 +97,19 @@ EXEC insertPassenger
 @Emaily = @PEMAIL, 
 @ptypeName = @PASSTYPNAME
 
-set @run = @run - 1
+set @RUN = @RUN - 1
+DELETE FROM WORKING_PEEPS_Customers
+	WHERE CustomerID = @PEEP_PK
 END
 
 EXEC wrapper_insertPassenger 1000
 
 Select * from tblPASSENGER
 
+Select * from tblPASSENGER_TYPE
+
+Select * from PEEPS.dbo.tblCUSTOMER
+
+Select distinct count(*) from tblPASSENGER
+
+Select * from WORKING_PEEPS_Customers

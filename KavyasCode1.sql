@@ -34,6 +34,28 @@ SELECT Neighborhood, ZipCode
 FROM WORKING_COPY_Neighborhoods
 
 
+CREATE PROCEDURE proj01_getPassengerTypeID 
+@PTName varchar(50), 
+@Passenger_Typey INT OUTPUT
+AS
+SET @Passenger_Typey = (Select PassengerTypeID from tblPassenger_Type WHERE PassengerTypeName = @PTName)
+
+
+
+Select TOP 7000 * 
+INTO WORKING_PEEPS_Customers
+FROM PEEPS.dbo.tblCUSTOMER
+
+Select * from WORKING_PEEPS_Customers
+
+IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_PEEPS_Customers')
+	BEGIN
+		DROP TABLE WORKING_PEEPS_Customers
+
+		SELECT * 
+		INTO WORKING_PEEPS_Customers
+		FROM PEEPS.dbo.tblCUSTOMER
+	END
 
 
 
