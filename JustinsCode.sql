@@ -47,7 +47,8 @@ DECLARE @VT_ID INT, @R_ID INT
     IF @VT_ID IS NULL
         BEGIN
             PRINT 'Vehicle type name is null, please check!'
-            THROW 50001, '@VT_ID is throwing an error, please check', 1;
+            RAISERROR ('@VT_ID is throwing an error, please check', 11, 1);
+            RETURN
         END
 
     EXEC GetRouteID
@@ -57,7 +58,7 @@ DECLARE @VT_ID INT, @R_ID INT
     IF @R_ID IS NULL
         BEGIN
             PRINT 'Route name is null, please check!'
-            THROW 50002, '@R_ID is throwing an error, please check', 1;
+            RAISERROR ('@R_ID is throwing an error, please check', 11, 1);
         END
 
     BEGIN TRAN T1
@@ -91,5 +92,10 @@ BEGIN
     @VehicleTName = @WrapperVehicleTypeName,
     @RtName = @WrapperRouteName
 
-    SET RUN = @RUN - 1
+    SET @RUN = @RUN - 1
 END
+
+EXEC Wrapper_Insert_Vehicle
+10
+
+SELECT * FROM tblVEHICLE
