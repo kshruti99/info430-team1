@@ -83,7 +83,7 @@ DECLARE @NName varchar(30), @DName varchar(30), @SName varchar(30)
 
 WHILE @RUN > 0
 BEGIN
---should i just start at one?
+
 SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
 SET @NName = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
 
