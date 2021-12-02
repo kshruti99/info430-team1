@@ -101,3 +101,31 @@ exec proj01_updatePassenger
 
 Select * from tblPASSENGER 
 WHERE PassengerID = 1
+
+-- Business rule 1: Employees MUST be older than 25 to work on 
+--Double-Decker, Guided, and Open top Buses
+-- Employee, Transportation, Vehicle, Vehicle Type
+CREATE FUNCTION dbo.proj01_employeeAge()
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT * from tblEMPLOYEE E 
+			JOIN tblTRANSPORTATION T on E.EmployeeID = T.EmployeeID
+			JOIN tblVEHICLE V on T.VehicleID = V.VehicleID
+			JOIN tblVEHICLE_TYPE VT on V.VehicleTypeID = VT.VehicleTypeID
+			WHERE VT.VehicleTypeID = 5 
+			OR VT.VehicleTypeID = 8
+			OR VT.VehicleTypeID = 11
+			AND E.EmployeeDOB > DateAdd(Year, -25, GetDate()))
+			BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+
+ALTER TABLE tblEmployee with nocheck
+ADD CONSTRAINT ck_age_trprt_type
+CHECK(dbo.proj01_employeeAge() = 0)
+
