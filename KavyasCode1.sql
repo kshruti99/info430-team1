@@ -148,3 +148,36 @@ ALTER TABLE tblPassenger with nocheck
 ADD CONSTRAINT check_edu_PassengerType
 CHECK (dbo.ck_student_passType() = 0)
 GO
+
+-- Computed Column 1: Average age of each passenger type
+CREATE FUNCTION FN_PassType_AvgAge(@PK INTEGER)
+RETURNS NUMERIC (4, 1)
+AS 
+BEGIN
+
+DECLARE @RET NUMERIC = (SELECT AVG(DATEDIFF(YEAR, P.PassengerDOB, GETDATE())) FROM tblPASSENGER P 
+						JOIN tblPASSENGER_TYPE PT ON P.PassengerTypeID = PT.PassengerTypeID
+						WHERE PT.PassengerTypeID = @PK)
+						RETURN @RET
+						END 
+						GO
+	ALTER TABLE tblPassenger_Type
+	ADD FN_PassType_AvgAge
+	AS (DBO.FN_PassType_AvgAge(PassengerTypeID))
+
+-- Computed Column 2: Number of boardings (aka rides) for each passenger 
+CREATE FUNCTION FN_Num_Boardings(@PK INTEGER)
+RETURNS INTEGER 
+AS 
+BEGIN 
+DECLARE @RET INTEGER = (Select COUNT(B.BoardingID) FROM tblBOARDING B 
+						JOIN tblPASSENGER P on B.PassengerID = P.PassengerID
+						WHERE P.PassengerID = @PK)
+						RETURN @RET
+						END 
+						GO 
+	ALTER TABLE tblPassenger
+	ADD FN_Num_Boardings
+	AS (DBO.FN_Num_Boardings(PassengerID))
+
+	Select * from tblPASSENGER
