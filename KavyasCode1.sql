@@ -129,3 +129,22 @@ ALTER TABLE tblEmployee with nocheck
 ADD CONSTRAINT ck_age_trprt_type
 CHECK(dbo.proj01_employeeAge() = 0)
 
+-- Business Rule 2: Only passengers with edu emails can be classified as Student Passenger Type
+ALTER FUNCTION dbo.ck_student_passType()
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+	IF EXISTS (SELECT * from tblPASSENGER P 
+		JOIN tblPASSENGER_TYPE PT on P.PassengerTypeID = PT.PassengerTypeID
+		WHERE PT.PassengerTypeName = 'Student'
+		AND P.PassengerEmail LIKE '%.edu')
+		SET @RET = 1
+	RETURN @RET
+END 
+GO
+
+ALTER TABLE tblPassenger with nocheck
+ADD CONSTRAINT check_edu_PassengerType
+CHECK (dbo.ck_student_passType() = 0)
+GO
