@@ -48,6 +48,7 @@ FROM PEEPS.dbo.tblCUSTOMER
 
 Select * from WORKING_PEEPS_Customers
 
+-- to make sure that we dont have this object already and repopulate it 
 IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_PEEPS_Customers')
 	BEGIN
 		DROP TABLE WORKING_PEEPS_Customers
@@ -57,6 +58,46 @@ IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_PEEPS_Customers')
 		FROM PEEPS.dbo.tblCUSTOMER
 	END
 
+	Select * from tblTransportation
 
 
+-- Sproc 2: Update Passenger Information
+Select * from tblPASSENGER
 
+
+CREATE PROCEDURE proj01_updatePassenger
+@P_ID INT,
+@Firsty varchar(50), 
+@Lasty varchar(50), 
+@Birthy DATE, 
+@Emaily varchar(50), 
+@ptypeName varchar(50)
+AS 
+DECLARE @TYPY_ID INT
+
+EXEC  proj01_getPassengerTypeID 
+@PTName = @ptypeName, 
+@Passenger_Typey = @TYPY_ID OUTPUT
+
+BEGIN 
+	UPDATE tblPASSENGER
+		SET PassengerFirstName = @Firsty, 
+		PassengerLastName = @Lasty, 
+		PassengerDOB = @Birthy,
+		PassengerEmail = @Emaily, 
+		PassengerTypeID = @TYPY_ID
+		WHERE PassengerID = @P_ID
+	END
+RETURN 0 
+
+-- testing
+exec proj01_updatePassenger
+@P_ID = 1,
+@Firsty = 'Kavie', 
+@Lasty = ' Iyer', 
+@Birthy = '11/03/1999', 
+@Emaily = 'kavyee@uw.edu', 
+@ptypeName = 'Student'
+
+Select * from tblPASSENGER 
+WHERE PassengerID = 1
