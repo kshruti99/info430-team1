@@ -60,16 +60,6 @@ ELSE
 GO
 
 --GetIDs needed for sproc 2
-
-CREATE PROCEDURE GetVehicleTypeID
-@VTName varchar(50),
-@VeTy INT OUTPUT
-AS
-SET @VeTy = (SELECT VehicleTypeID
-             FROM tblVEHICLE_TYPE
-             WHERE VehicleTypeName = @VTName)
-GO
-
 CREATE PROCEDURE GetRouteID
 @RName varchar(50),
 @Routy INT OUTPUT
@@ -80,23 +70,11 @@ SET @Routy = (SELECT RouteID
 GO
 
 CREATE PROCEDURE GetVehicleID
-@VTN varchar(50),
-@RN varchar(50),
-@VTID INT,
-@RID INT,
+@VName varchar(30),
 @VID INT OUTPUT
 AS
-
-EXEC GetVehicleTypeID
-@VTName = @VTN,
-@VeTy = @VTID OUTPUT
-
-EXEC GetRouteID
-@RName = @RN,
-@Routy = @RID OUTPUT
-
 SET @VID = (SELECT vehicleID FROM tblVEHICLE
-        WHERE VehicleTypeID = @VTID AND RouteID = @RID)
+        WHERE VehicleName = @VName)
 GO
 
 CREATE PROCEDURE GetEmployeeID
@@ -109,24 +87,18 @@ SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirs
     EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
 GO
 
-CREATE PROCEDURE GetTransportationID
-@VehicleTName varchar(50),
+ALTER PROCEDURE GetTransportationID
 @RouteN varchar(30),
-@VehicleTID INT,
-@RouteIdent INT,
-@VehicleIdent INT,
+@VehicleN varchar(30),
 @EFName varchar(30),
 @ELName varchar(30),
 @EBday Date,
-@EmpID INT,
 @TID INT OUTPUT
 AS
+DECLARE @RouteIdent INT, @VehicleIdent INT, @EmpID INT
 
 EXEC GetVehicleID
-@VTN = @VehicleTName,
-@RN = @RouteN,
-@VTID = @VehicleTID,
-@RID = @RouteIdent,
+@VName = @VehicleN,
 @VID = @VehicleIdent OUTPUT
 
 EXEC GetEmployeeID
@@ -143,6 +115,20 @@ SET @TID = (SELECT transportationID FROM tblTRANSPORTATION
         WHERE RouteID = @RouteIdent AND VehicleID = @VehicleIdent
         AND EmployeeID = @EmpID)
 GO
+
+
+
+
+
+EXEC GetTransportationID
+@RouteN = 'Bx28',
+@VehicleN = 'Bus1',
+@EFName = 'Jamila',
+@ELName = 'Kyzar',
+@EBday = '1959-04-12'
+
+
+
 
 CREATE PROCEDURE GetPassengerID
 @Pemail varchar(50),
@@ -163,15 +149,14 @@ GO
 CREATE PROCEDURE GetStopID
 @NeighName varchar(50),
 @ZipC INT,
-@NeighborID INT,
 @Dname varchar(50),
-@DID INT,
 @SID INT OUTPUT
 AS
+DECLARE @DID INT, @NeighborID INT
 
 EXEC GetNeighborhoodID
 @NName = @NeighName,
-@ZCOde = @ZipC,
+@ZCode = @ZipC,
 @Neighy = @NeighborID OUTPUT
 
 EXEC GetDirectionID
@@ -183,40 +168,26 @@ GO
 
 --sproc 2
 CREATE PROCEDURE INSERT_BOARDING
--- transportation ID, PassengerID, StopID
-    -- transportation requires vehicle, route, and employee
-    -- stop requires neighborhood, direction, stop name
-@VTN2 varchar(50),
 @RN2 varchar(30),
-@VTID2 INT,
-@RID2 INT,
-@VID2 INT,
+@VN2 varchar(30),
 @EFN2 varchar(30),
 @ELN2 varchar(30),
 @EBD2 Date,
-@EID2 INT,
 @Pmail2 varchar(50),
 @NName2 varchar(50),
 @zippy2 INT,
-@NID2 INT,
-@DName2 varchar(30),
-@DID2 INT
+@DName2 varchar(30)
 AS
 DECLARE
 @T_ID INT, @P_ID INT, @S_ID INT
 
 EXEC GetTransportationID
-@VehicleTName = @VTN2,
 @RouteN = @RN2,
-@VehicleTID = @VTID2,
-@RouteIdent = @RID2,
-@VehicleIdent = @VID2,
+@VehicleN = @VN2,
 @EFName = @EFN2,
 @ELName = @ELN2,
 @EBday = @EBD2,
-@EmpID = @EID2,
 @TID =  @T_ID OUTPUT
-
 IF @T_ID IS NULL
 BEGIN
 PRINT 'transportation ID IS NULL'
@@ -227,7 +198,6 @@ END
 EXEC GetPassengerID
 @Pemail = @Pmail2,
 @Passengery = @P_ID OUTPUT
-
 IF @P_ID IS NULL
 BEGIN
 PRINT 'passenger ID IS NULL'
@@ -238,11 +208,8 @@ END
 EXEC GetStopID
 @NeighName = @NName2,
 @ZipC = @zippy2,
-@NeighborID = @NID2,
 @Dname = @DName2,
-@DID = @DID2,
 @SID = @S_ID OUTPUT
-
 IF @S_ID IS NULL
 BEGIN
 PRINT 'stop ID IS NULL'
@@ -261,62 +228,95 @@ ELSE
  COMMIT TRAN T1
 GO
 
-
-
-
-
-
-
-
-
 --business rule 1
-CREATE FUNCTION dbo.fn_underAge()
-    RETURNS INTEGER
+-- passengers cannot be under 10 and ride the bus in certain neighborhoods going south
+CREATE FUNCTION dbo.proj01_underAge()
+RETURNS INTEGER
 AS
 BEGIN
-    DECLARE @RET INTEGER = 0
+DECLARE @RET INTEGER = 0
     IF EXISTS(SELECT *
               FROM tblPASSENGER P
-              WHERE P.PassengerDOB <= 2)
-        BEGIN
-            SET @RET = 1
-        end
+              JOIN tblBOARDING B ON P.PassengerID = B.PassengerID
+              JOIN tblSTOP S ON S.StopID = B.StopID
+              JOIN tblNEIGHBORHOOD N ON N.NeighborhoodID = S.NeighborhoodID
+              JOIN tblSTOP_DIRECTION SD on S.DirectionID = SD.DirectionID
+              WHERE P.PassengerDOB <= DATEADD(YEAR, -10, GETDATE())
+                AND SD.DirectionName <> 'Southbound'
+                AND N.NeighborhoodName <> 'Central Bronx'
+                AND N.NeighborhoodName <> 'High Bridge and Morrisania')
+              BEGIN
+                SET @RET = 1
+              end
     RETURN @RET
-end
-    ALTER TABLE tblPASSENGER
-        ADD CONSTRAINT const_underAge
-            CHECK (dbo.fn_underAge() = 0)
+END
+GO
+
+ALTER TABLE tblPASSENGER with nocheck
+ADD CONSTRAINT const_underAge
+CHECK (dbo.proj01_underAge() = 0)
 
 -- business rule 2
-CREATE FUNCTION dbo.fn_maxPassengers()
-    RETURNS INTEGER
+-- School buses cannot have any passengers over 22 and must have edu emails
+CREATE FUNCTION dbo.proj01_maxPassengers()
+RETURNS INTEGER
 AS
 BEGIN
     DECLARE @RET INTEGER = 0
-    IF EXISTS(SELECT * FROM ___)
+    IF EXISTS(SELECT * FROM tblBOARDING B
+        JOIN tblPASSENGER P ON P.PassengerID = B.PassengerID
+        JOIN tblTRANSPORTATION T on B.TransportationID = T.TransportationID
+        JOIN tblVEHICLE V ON V.VehicleID = T.VehicleID
+        JOIN tblVEHICLE_TYPE VT on V.VehicleTypeID = VT.VehicleTypeID
+        WHERE P.PassengerDOB > DATEADD(YEAR, -22, GETDATE())
+        AND VT.VehicleTypeName = 'School bus'
+        AND P.PassengerEmail LIKE '%.edu')
         BEGIN
             SET @RET = 1
         END
     RETURN @RET
 end
-    ALTER TABLE tblBOARDING
-        ADD CONSTRAINT const_maxBoarding
-            CHECK (dbo.fn_maxPassengers() = 0)
+GO
+
+ALTER TABLE tblBOARDING with nocheck
+ADD CONSTRAINT const_maxBoarding
+CHECK (dbo.proj01_maxPassengers() = 0)
 
 -- computed column 1
+-- Stop use frequency
 CREATE FUNCTION fn_stopPop(@PK INT)
-RETURNS INT
+RETURNS varchar(30)
     AS
     BEGIN
-        DECLARE @RET INT = (SELECT MAX(COUNT(StopID)) FROM
-            tblSTOP JOIN
-                WHERE P.PassengerID = @PK)
+    DECLARE @RET varchar(30) = (SELECT COUNT(B.BoardingID) as stopCount FROM tblBOARDING B
+                                JOIN tblSTOP S ON S.StopID = B.StopID
+                                WHERE S.StopID = @PK)
         RETURN @RET
     end
     GO
-ALTER TABLE tblPASSENGER
-ADD ___ AS (dbo.fn_stopPop(PassengerID))
 
-
+	ALTER TABLE tblSTOP
+	ADD fn_stopPop
+	AS (DBO.fn_stopPop(StopID))
 
 -- computed column 2
+-- number of stops in each direction
+CREATE FUNCTION fn_TopNeighborhood(@PK INT)
+RETURNS varchar(30)
+    AS
+    BEGIN
+    DECLARE @RET varchar(30) = (SELECT COUNT(S.stopID) FROM tblSTOP S
+                                JOIN tblSTOP_DIRECTION SD on S.DirectionID = SD.DirectionID
+                                WHERE SD.DirectionName = @PK)
+        RETURN @RET
+    end
+    GO
+
+	ALTER TABLE tblSTOP_DIRECTION
+	ADD fn_TopNeighborhood
+	AS (DBO.fn_TopNeighborhood(DirectionName))
+
+-- View1
+
+
+-- View2
