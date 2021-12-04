@@ -301,7 +301,7 @@ RETURNS varchar(30)
 
 -- computed column 2
 -- number of stops in each direction
-CREATE FUNCTION fn_TopNeighborhood(@PK INT)
+CREATE FUNCTION fn_DirectionPop(@PK varchar(30))
 RETURNS varchar(30)
     AS
     BEGIN
@@ -314,7 +314,7 @@ RETURNS varchar(30)
 
 	ALTER TABLE tblSTOP_DIRECTION
 	ADD fn_TopNeighborhood
-	AS (DBO.fn_TopNeighborhood(DirectionName))
+	AS (DBO.fn_DirectionPop(DirectionName))
 
 -- View1
 
