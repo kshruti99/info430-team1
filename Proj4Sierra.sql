@@ -316,7 +316,25 @@ RETURNS varchar(30)
 	ADD fn_TopNeighborhood
 	AS (DBO.fn_DirectionPop(DirectionName))
 
--- View1
+-- View1 - ages and names of the youngest five percent of water taxi inspectors
+CREATE VIEW vwYoungest_WaterTaxiInspectors
+AS
+SELECT A.EmployeeFirstName, A.EmployeeLastName, A.EmployeeAge FROM
+       (SELECT NTILE(100) OVER (ORDER BY E.EmployeeDOB DESC) AS waterTaxiInspector,
+        E.EmployeeFirstName, E.EmployeeLastName, E.EmployeeDOB, DATEDIFF(YEAR, E.EmployeeDOB, GETDATE()) AS EmployeeAge
+FROM tblEMPLOYEE E
+JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID
+WHERE ET.EmployeeTypeName = 'water taxi inspector') AS A
+WHERE A.waterTaxiInspector <= 5
+GO
 
-
--- View2
+-- View2 - top 3 oldest employees of each vehicle type
+CREATE VIEW vwOldest_Employees_VType
+AS
+SELECT A.employeeFirstName, A.employeeLastName, A.EmployeeTypeName, A.EmployeeDOB FROM
+                   (SELECT RANK() OVER (PARTITION BY ET.employeeTypeName ORDER BY E.EmployeeDOB)
+                    AS oldEmps, E.employeeFirstName, E.employeeLastName, ET.EmployeeTypeName, E.EmployeeDOB
+FROM tblEMPLOYEE E
+    JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID) as A
+	WHERE oldEmps <= 3
+GO
