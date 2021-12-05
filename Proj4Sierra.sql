@@ -74,7 +74,7 @@ CREATE PROCEDURE GetVehicleID
 @VID INT OUTPUT
 AS
 SET @VID = (SELECT vehicleID FROM tblVEHICLE
-        WHERE VehicleName = @VName)
+        WHERE VehichleName = @VName)
 GO
 
 CREATE PROCEDURE GetEmployeeID
@@ -90,45 +90,19 @@ GO
 ALTER PROCEDURE GetTransportationID
 @RouteN varchar(30),
 @VehicleN varchar(30),
+@EBday date,
 @EFName varchar(30),
 @ELName varchar(30),
-@EBday Date,
 @TID INT OUTPUT
 AS
-DECLARE @RouteIdent INT, @VehicleIdent INT, @EmpID INT
-
-EXEC GetVehicleID
-@VName = @VehicleN,
-@VID = @VehicleIdent OUTPUT
-
-EXEC GetEmployeeID
-@EFirstName = @EFName,
-@ELastName = @ELName,
-@EDOB = @EBday,
-@Empy = @EmpID OUTPUT
-
-EXEC GetRouteID
-@RName = @RouteN,
-@Routy = @RouteIdent OUTPUT
-
-SET @TID = (SELECT transportationID FROM tblTRANSPORTATION
-        WHERE RouteID = @RouteIdent AND VehicleID = @VehicleIdent
-        AND EmployeeID = @EmpID)
+SET @TID = (SELECT transportationID FROM tblTRANSPORTATION T
+        JOIN tblROUTE R ON T.RouteID = R.RouteID
+        JOIN tblVEHICLE V ON T.VehicleID = V.VehicleID
+        JOIN tblEMPLOYEE E on T.EmployeeID = E.EmployeeID
+        WHERE R.routeName = @RouteN AND V.VehichleName = @VehicleN
+        AND E.EmployeeFirstName = @EFName AND E.EmployeeLastName = @ELName
+        AND E.EmployeeDOB = @EBday)
 GO
-
-
-
-
-
-EXEC GetTransportationID
-@RouteN = 'Bx28',
-@VehicleN = 'Bus1',
-@EFName = 'Jamila',
-@ELName = 'Kyzar',
-@EBday = '1959-04-12'
-
-
-
 
 CREATE PROCEDURE GetPassengerID
 @Pemail varchar(50),
@@ -146,28 +120,34 @@ SET @Neighy = (SELECT neighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName
                 AND ZipCode = @ZCode)
 GO
 
-CREATE PROCEDURE GetStopID
+ALTER PROCEDURE GetStopID
 @NeighName varchar(50),
 @ZipC INT,
 @Dname varchar(50),
+@SName varchar(30),
 @SID INT OUTPUT
 AS
-DECLARE @DID INT, @NeighborID INT
-
-EXEC GetNeighborhoodID
-@NName = @NeighName,
-@ZCode = @ZipC,
-@Neighy = @NeighborID OUTPUT
-
-EXEC GetDirectionID
-@DirectionNamey = @Dname,
-@Directiony = @DID OUTPUT
-
-SET @SID = (SELECT stopID FROM tblSTOP WHERE NeighborhoodID = @NeighborID AND DirectionID = @DID)
+SET @SID = (SELECT stopID FROM tblSTOP S
+            JOIN tblNEIGHBORHOOD N ON N.neighborhoodID = S.neighborhoodID
+            JOIN tblSTOP_DIRECTION SD on S.DirectionID = SD.DirectionID
+            WHERE NeighborhoodName = @NeighName AND ZipCode = @ZipC
+            AND SD.DirectionName = @Dname AND S.stopName = @SName)
 GO
 
+--EXEC INSERT_BOARDING
+--@RN2 = 'Bx28',
+--@VN2 = 'NYCT_8041',
+--@EFN2 = 'Jamila',
+--@ELN2 = 'Kyzar',
+--@EBD2 = '1959-04-12',
+--@Pmail2 = 'kavyee@uw.edu',
+--@NName2 = 'Northwest Brooklyn',
+--@zippy2 = 11215,
+--@DName2 = 'Northbound',
+--@SN2 = 'LIVONIA AV/ASHFORD ST'
+
 --sproc 2
-CREATE PROCEDURE INSERT_BOARDING
+ALTER PROCEDURE INSERT_BOARDING
 @RN2 varchar(30),
 @VN2 varchar(30),
 @EFN2 varchar(30),
@@ -176,22 +156,22 @@ CREATE PROCEDURE INSERT_BOARDING
 @Pmail2 varchar(50),
 @NName2 varchar(50),
 @zippy2 INT,
+@SN2 varchar(30),
 @DName2 varchar(30)
 AS
 DECLARE
 @T_ID INT, @P_ID INT, @S_ID INT
 
-EXEC GetTransportationID
-@RouteN = @RN2,
-@VehicleN = @VN2,
-@EFName = @EFN2,
-@ELName = @ELN2,
-@EBday = @EBD2,
-@TID =  @T_ID OUTPUT
-IF @T_ID IS NULL
+EXEC GetStopID
+@NeighName = @NName2,
+@ZipC = @zippy2,
+@Dname = @DName2,
+@SName = @SN2,
+@SID = @S_ID OUTPUT
+IF @S_ID IS NULL
 BEGIN
-PRINT 'transportation ID IS NULL'
-RAISERROR ('CHECK transportation ID', 11, 1)
+PRINT 'stop ID IS NULL'
+RAISERROR ('CHECK stop ID', 11, 1)
 RETURN
 END
 
@@ -205,15 +185,17 @@ RAISERROR ('CHECK passenger ID', 11, 1)
 RETURN
 END
 
-EXEC GetStopID
-@NeighName = @NName2,
-@ZipC = @zippy2,
-@Dname = @DName2,
-@SID = @S_ID OUTPUT
-IF @S_ID IS NULL
+EXEC GetTransportationID
+@RouteN = @RN2,
+@VehicleN = @VN2,
+@EFName = @EFN2,
+@ELName = @ELN2,
+@EBday = @EBD2,
+@TID =  @T_ID OUTPUT
+IF @T_ID IS NULL
 BEGIN
-PRINT 'stop ID IS NULL'
-RAISERROR ('CHECK stop ID', 11, 1)
+PRINT 'transportation ID IS NULL'
+RAISERROR ('CHECK transportation ID', 11, 1)
 RETURN
 END
 
