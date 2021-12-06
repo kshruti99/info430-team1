@@ -85,6 +85,11 @@ BEGIN
     SET @WrapperVehicleTypeName = (SELECT VehicleTypeName FROM tblVEHICLE_TYPE WHERE VehicleTypeID = @VT_PK)
     SET @RandomDummy = (SELECT RAND() * 10000 + 1)
     SET @WrapperVehicleName = 'NYCT_' + (CONVERT(varchar(50), @RandomDummy))
+    WHILE EXISTS(SELECT 1 FROM tblVEHICLE WHERE VehicleName = @WrapperVehicleName)
+        BEGIN
+            SET @RandomDummy = (SELECT RAND() * 10000 + 1)
+            SET @WrapperVehicleName = 'NYCT_' + (CONVERT(varchar(50), @RandomDummy))
+        END
     EXEC InsertVehicle
     @VehicleTName = @WrapperVehicleTypeName,
     @VName = @WrapperVehicleName
@@ -93,21 +98,18 @@ BEGIN
 END
 
 EXEC Wrapper_Insert_Vehicle
-1
+3000
 
-SELECT DISTINCT COUNT(VehicleName) AS COUNT
-    FROM tblVEHICLE
+SELECT COUNT(DISTINCT (VehicleName)) FROM tblVEHICLE
 
 -- SELECT * FROM tblVEHICLE
---
+
 -- ALTER TABLE tblTRANSPORTATION
 -- DROP CONSTRAINT FK_TransportationVehicle;
---
 -- TRUNCATE TABLE tblVEHICLE;
 
-ALTER TABLE tblTRANSPORTATION
-ADD CONSTRAINT FK_TransportationVehicle
-FOREIGN KEY (VehicleID) REFERENCES tblVEHICLE(VehicleID)
+-- ALTER TABLE tblTRANSPORTATION
+-- ADD CONSTRAINT FK_TransportationVehicle
+-- FOREIGN KEY (VehicleID) REFERENCES tblVEHICLE(VehicleID)
 
-EXEC sp_rename 'dbo.tblVEHICLE.Vehicle', 'VehicleName', 'COLUMN';
-
+-- EXEC sp_rename 'dbo.tblVEHICLE.Vehicle', 'VehicleName', 'COLUMN';
