@@ -63,27 +63,28 @@ VALUES (@VT_ID, @VName)
 GO
 
 -- Create vehicle name tempTable
-CREATE TABLE #tempVehicleName
-(VehicleNameID INT IDENTITY(1, 1) PRIMARY KEY,
-VehicleName varchar(50) NOT NULL)
-GO
-INSERT INTO #tempVehicleName(VehicleName)
-SELECT VehicleRef FROM WORKING_COPY_TransportationData
+-- CREATE TABLE #tempVehicleName
+-- (VehicleNameID INT IDENTITY(1, 1) PRIMARY KEY,
+-- VehicleName varchar(50) NOT NULL)
+-- GO
+-- INSERT INTO #tempVehicleName(VehicleName)
+-- SELECT DISTINCT VehicleRef FROM WORKING_COPY_TransportationData
+--
+-- SELECT * FROM #tempVehicleName;
 
 -- Synthetic transaction
 ALTER PROCEDURE Wrapper_Insert_Vehicle
 @RUN INT
 AS
-    DECLARE @VT_PK INT, @VN_PK INT
+    DECLARE @VT_PK INT, @RandomDummy INT
     DECLARE @VehicleTypeCount INT = (SELECT COUNT(*) FROM tblVEHICLE_TYPE)
-    DECLARE @VehicleNameCount INT = (SELECT COUNT(*) FROM #tempVehicleName)
     DECLARE @WrapperVehicleTypeName varchar(50), @WrapperVehicleName varchar(50)
 WHILE @RUN > 0
 BEGIN
     SET @VT_PK = (SELECT RAND() * @VehicleTypeCount + 1)
-    SET @VN_PK = (SELECT RAND() * @VehicleNameCount + 1)
     SET @WrapperVehicleTypeName = (SELECT VehicleTypeName FROM tblVEHICLE_TYPE WHERE VehicleTypeID = @VT_PK)
-    SET @WrapperVehicleName = (SELECT VehicleName FROM #tempVehicleName WHERE VehicleNameID = @VN_PK)
+    SET @RandomDummy = (SELECT RAND() * 10000 + 1)
+    SET @WrapperVehicleName = 'NYCT_' + (CONVERT(varchar(50), @RandomDummy))
     EXEC InsertVehicle
     @VehicleTName = @WrapperVehicleTypeName,
     @VName = @WrapperVehicleName
@@ -92,9 +93,17 @@ BEGIN
 END
 
 EXEC Wrapper_Insert_Vehicle
-3000
+1
 
-SELECT * FROM tblVEHICLE
+SELECT DISTINCT COUNT(VehicleName) AS COUNT
+    FROM tblVEHICLE
+
+-- SELECT * FROM tblVEHICLE
+--
+-- ALTER TABLE tblTRANSPORTATION
+-- DROP CONSTRAINT FK_TransportationVehicle;
+--
+-- TRUNCATE TABLE tblVEHICLE;
 
 ALTER TABLE tblTRANSPORTATION
 ADD CONSTRAINT FK_TransportationVehicle

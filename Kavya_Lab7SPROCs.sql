@@ -118,11 +118,11 @@ Select * from WORKING_PEEPS_Customers
 
 -- Populate tblTransportation!!!
 -- vehicle, route, employee
-CREATE PROCEDURE proj01_insert_xport 
+CREATE PROCEDURE proj01_insert_xport
 @VeName varchar(50),
-@RouName varchar(50), 
-@EFName varchar(50), 
-@ELName varchar(50), 
+@RouName varchar(50),
+@EFName varchar(50),
+@ELName varchar(50),
 @EmpDOB DATE
 AS
 DECLARE @V_ID INT, @E_ID INT, @R_ID INT
@@ -130,53 +130,49 @@ DECLARE @V_ID INT, @E_ID INT, @R_ID INT
 EXEC GetVehicleID
 @VName = @VeName,
 @VID = @V_ID OUTPUT
-
-IF @V_ID IS NULL 
-	BEGIN 
+IF @V_ID IS NULL
+	BEGIN
 		PRINT 'Vehicle ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Vehicle', 11, 1)
 		RETURN
-	END 
-
+	END
 
 EXEC GetRouteID
 @RName = @RouName,
 @Routy = @R_ID OUTPUT
-
-IF @R_ID IS NULL 
-	BEGIN 
+IF @R_ID IS NULL
+	BEGIN
 		PRINT 'Route ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Route', 11, 1)
 		RETURN
-	END 
+	END
 
 EXEC GetEmployeeID
 @EFirstName = @EFName,
 @ELastName = @ELName,
 @EDOB = @EmpDOB,
 @Empy = @E_ID OUTPUT
-
-IF @E_ID IS NULL 
-	BEGIN 
+IF @E_ID IS NULL
+	BEGIN
 		PRINT 'Emp ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Emp', 11, 1)
 		RETURN
-	END 
+	END
+
 BEGIN TRAN T1
 INSERT INTO tblTRANSPORTATION(VehicleID, RouteID, EmployeeID)
 	VALUES (@V_ID, @R_ID, @E_ID)
 
-IF @@ERROR <> 0 
-	BEGIN 
-		ROLLBACK TRAN T1 
+IF @@ERROR <> 0
+	BEGIN
+		ROLLBACK TRAN T1
 	END
-ELSE 
+ELSE
 	COMMIT TRAN T1
-GO 
+GO
 
 -- Wrapper
-
-CREATE PROCEDURE wrapper_insertXport
+ALTER PROCEDURE wrapper_insertXport
 @RUN INT
 AS
 DECLARE @E_PK INT
@@ -191,7 +187,7 @@ DECLARE @VN varchar(30), @RN varchar(30), @EFN varchar(30), @ELN varchar(30), @E
 WHILE @RUN > 0
 BEGIN
 
-    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1 + 1002)
     SET @EFN = (SELECT employeeFirstName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
     SET @ELN = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
     SET @EDOB = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
@@ -216,3 +212,11 @@ GO
 
 EXEC wrapper_insertXport
     @RUN = 10
+
+	Select * from tblTRANSPORTATION
+	ORDER BY EmployeeID
+
+	EXEC Wrapper_INSERT_BOARDING @RUN = 100
+
+	Select * from tblBOARDING
+	Select * from tblTRANSPORTATION

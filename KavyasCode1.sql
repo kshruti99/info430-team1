@@ -182,10 +182,52 @@ DECLARE @RET INTEGER = (Select COUNT(B.BoardingID) FROM tblBOARDING B
 
 	Select * from tblPASSENGER
 
-	-- View 1: 
+	-- View 1: 10th oldest person who has ever taken a shuttle bus to Central Bronx
+	create view vw_old_bronx_bus
+	as 
+	(select p.passengerid, p.passengerfirstname, p.passengerlastname,
+		DENSE_RANK() OVER (ORDER BY P.PassengerDOB DESC) AS oldestRanked
+		FROM tblPassenger p 
+		join tblBoarding B on p.passengerID = b.PassengerID 
+		join tblStop S on B.StopID  = S.StopID
+		join tblNEIGHBORHOOD N on S.NeighborhoodID = N.NeighborhoodID
+		join tblTRANSPORTATION T on B.TransportationID = T.TransportationID
+		join tblVEHICLE V on T.VehicleID = V.VehicleID
+		join tblVEHICLE_TYPE VT on V.VehicleTypeID = VT.VehicleTypeID
+		WHERE VT.VehicleTypeName = 'shuttle bus'
+		AND N.NeighborhoodName = 'Central Bronx')
+	
+	select * from vw_old_bronx_bus
+	WHERE oldestRanked = 10
 
-	Select * from tblTRANSPORTATION
+	select * from tblEMPLOYEE
 
-	EXEC wrapper_insertXport
-    @RUN = 10
+	-- View 2: Who meets the following conditions: 
+	--employees of type bus driver who have driven school buses in Southwest Brooklyn 
+	--who are also born in between June 1, 1957 and June 1, 1987
+
+	CREATE VIEW vw_brooklyn_schoolbus 
+	AS 
+	SELECT E.EmployeeID, E.EmployeeFirstName, E.EmployeeLastName
+	FROM tblEMPLOYEE E 
+	JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID
+	JOIN tblTRANSPORTATION T on E.EmployeeID = T.EmployeeID
+	join tblVEHICLE V on T.VehicleID = V.VehicleID
+	join tblVEHICLE_TYPE VT  on V.VehicleTypeID = VT.VehicleTypeID
+	join tblBoarding B on T.TransportationID = B.TransportationID
+	join tblSTOP S on B.StopID = S.StopID
+	join tblNEIGHBORHOOD N on S.NeighborhoodID = N.NeighborhoodID
+	WHERE VT.VehicleTypeName = 'School bus'
+	AND N.NeighborhoodName = 'Southwest Brooklyn'
+	AND ET.EmployeeTypeName = 'Bus driver'
+
+	CREATE VIEW vw_driver_age_range
+	AS
+	SELECT E.EmployeeID, E.EmployeeFirstName, E.EmployeeLastName, E.EmployeeDOB
+	from tblEMPLOYEE E 
+	WHERE E.EmployeeDOB BETWEEN '06/01/1957' AND '06/01/1987'
+
+Select A.EmployeeID, A.EmployeeFirstName, A.EmployeeLastName, B.EmployeeDOB
+from vw_brooklyn_schoolbus A
+join vw_driver_age_range B on A.EmployeeID = B.EmployeeID
 
