@@ -87,23 +87,6 @@ SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirs
     EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
 GO
 
-/*ALTER PROCEDURE GetTransportationID
-@RouteN varchar(30),
-@VehicleN varchar(30),
-@EBday date,
-@EFName varchar(30),
-@ELName varchar(30),
-@TID INT OUTPUT
-AS
-SET @TID = (SELECT transportationID FROM tblTRANSPORTATION T
-        JOIN tblROUTE R ON T.RouteID = R.RouteID
-        JOIN tblVEHICLE V ON T.VehicleID = V.VehicleID
-        JOIN tblEMPLOYEE E on T.EmployeeID = E.EmployeeID
-        WHERE R.routeName = @RouteN AND V.VehicleName = @VehicleN
-        AND E.EmployeeFirstName = @EFName AND E.EmployeeLastName = @ELName
-        AND E.EmployeeDOB = @EBday)
-GO */
-
 ALTER PROCEDURE GetTransportationID
 @TranName varchar(30),
 @TID INT OUTPUT
@@ -343,6 +326,16 @@ JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID
 WHERE ET.EmployeeTypeName = 'water taxi inspector') AS A
 
 -- visualization 2
+SELECT * FROM vwPassengerBoardingCount
+
+--visualization 3
+SELECT VT.VehicleTypeID, VT. VehicleTypeName, COUNT(B.boardingID) AS riderCount
+FROM tblVEHICLE_TYPE VT
+JOIN tblVEHICLE V ON VT.VehicleTypeID = V.VehicleTypeID
+JOIN tblTRANSPORTATION TR ON V.VehicleID = TR.VehicleID
+JOIN tblBOARDING B ON TR.TransportationID = B.TransportationID
+GROUP BY VT.VehicleTypeID, VT.VehicleTypeName
+GO
 
 
 
