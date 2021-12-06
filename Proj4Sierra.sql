@@ -74,7 +74,7 @@ CREATE PROCEDURE GetVehicleID
 @VID INT OUTPUT
 AS
 SET @VID = (SELECT vehicleID FROM tblVEHICLE
-        WHERE VehicleName = @VName)
+        WHERE VehichleName = @VName)
 GO
 
 CREATE PROCEDURE GetEmployeeID
@@ -90,45 +90,19 @@ GO
 ALTER PROCEDURE GetTransportationID
 @RouteN varchar(30),
 @VehicleN varchar(30),
+@EBday date,
 @EFName varchar(30),
 @ELName varchar(30),
-@EBday Date,
 @TID INT OUTPUT
 AS
-DECLARE @RouteIdent INT, @VehicleIdent INT, @EmpID INT
-
-EXEC GetVehicleID
-@VName = @VehicleN,
-@VID = @VehicleIdent OUTPUT
-
-EXEC GetEmployeeID
-@EFirstName = @EFName,
-@ELastName = @ELName,
-@EDOB = @EBday,
-@Empy = @EmpID OUTPUT
-
-EXEC GetRouteID
-@RName = @RouteN,
-@Routy = @RouteIdent OUTPUT
-
-SET @TID = (SELECT transportationID FROM tblTRANSPORTATION
-        WHERE RouteID = @RouteIdent AND VehicleID = @VehicleIdent
-        AND EmployeeID = @EmpID)
+SET @TID = (SELECT transportationID FROM tblTRANSPORTATION T
+        JOIN tblROUTE R ON T.RouteID = R.RouteID
+        JOIN tblVEHICLE V ON T.VehicleID = V.VehicleID
+        JOIN tblEMPLOYEE E on T.EmployeeID = E.EmployeeID
+        WHERE R.routeName = @RouteN AND V.VehichleName = @VehicleN
+        AND E.EmployeeFirstName = @EFName AND E.EmployeeLastName = @ELName
+        AND E.EmployeeDOB = @EBday)
 GO
-
-
-
-
-
-EXEC GetTransportationID
-@RouteN = 'Bx28',
-@VehicleN = 'Bus1',
-@EFName = 'Jamila',
-@ELName = 'Kyzar',
-@EBday = '1959-04-12'
-
-
-
 
 CREATE PROCEDURE GetPassengerID
 @Pemail varchar(50),
@@ -146,28 +120,34 @@ SET @Neighy = (SELECT neighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName
                 AND ZipCode = @ZCode)
 GO
 
-CREATE PROCEDURE GetStopID
+ALTER PROCEDURE GetStopID
 @NeighName varchar(50),
 @ZipC INT,
 @Dname varchar(50),
+@SName varchar(30),
 @SID INT OUTPUT
 AS
-DECLARE @DID INT, @NeighborID INT
-
-EXEC GetNeighborhoodID
-@NName = @NeighName,
-@ZCode = @ZipC,
-@Neighy = @NeighborID OUTPUT
-
-EXEC GetDirectionID
-@DirectionNamey = @Dname,
-@Directiony = @DID OUTPUT
-
-SET @SID = (SELECT stopID FROM tblSTOP WHERE NeighborhoodID = @NeighborID AND DirectionID = @DID)
+SET @SID = (SELECT stopID FROM tblSTOP S
+            JOIN tblNEIGHBORHOOD N ON N.neighborhoodID = S.neighborhoodID
+            JOIN tblSTOP_DIRECTION SD on S.DirectionID = SD.DirectionID
+            WHERE NeighborhoodName = @NeighName AND ZipCode = @ZipC
+            AND SD.DirectionName = @Dname AND S.stopName = @SName)
 GO
 
+--EXEC INSERT_BOARDING
+--@RN2 = 'Bx28',
+--@VN2 = 'NYCT_8041',
+--@EFN2 = 'Jamila',
+--@ELN2 = 'Kyzar',
+--@EBD2 = '1959-04-12',
+--@Pmail2 = 'kavyee@uw.edu',
+--@NName2 = 'Northwest Brooklyn',
+--@zippy2 = 11215,
+--@DName2 = 'Northbound',
+--@SN2 = 'LIVONIA AV/ASHFORD ST'
+
 --sproc 2
-CREATE PROCEDURE INSERT_BOARDING
+ALTER PROCEDURE INSERT_BOARDING
 @RN2 varchar(30),
 @VN2 varchar(30),
 @EFN2 varchar(30),
@@ -176,10 +156,34 @@ CREATE PROCEDURE INSERT_BOARDING
 @Pmail2 varchar(50),
 @NName2 varchar(50),
 @zippy2 INT,
+@SN2 varchar(30),
 @DName2 varchar(30)
 AS
 DECLARE
 @T_ID INT, @P_ID INT, @S_ID INT
+
+EXEC GetStopID
+@NeighName = @NName2,
+@ZipC = @zippy2,
+@Dname = @DName2,
+@SName = @SN2,
+@SID = @S_ID OUTPUT
+IF @S_ID IS NULL
+BEGIN
+PRINT 'stop ID IS NULL'
+RAISERROR ('CHECK stop ID', 11, 1)
+RETURN
+END
+
+EXEC GetPassengerID
+@Pemail = @Pmail2,
+@Passengery = @P_ID OUTPUT
+IF @P_ID IS NULL
+BEGIN
+PRINT 'passenger ID IS NULL'
+RAISERROR ('CHECK passenger ID', 11, 1)
+RETURN
+END
 
 EXEC GetTransportationID
 @RouteN = @RN2,
@@ -195,28 +199,6 @@ RAISERROR ('CHECK transportation ID', 11, 1)
 RETURN
 END
 
-EXEC GetPassengerID
-@Pemail = @Pmail2,
-@Passengery = @P_ID OUTPUT
-IF @P_ID IS NULL
-BEGIN
-PRINT 'passenger ID IS NULL'
-RAISERROR ('CHECK passenger ID', 11, 1)
-RETURN
-END
-
-EXEC GetStopID
-@NeighName = @NName2,
-@ZipC = @zippy2,
-@Dname = @DName2,
-@SID = @S_ID OUTPUT
-IF @S_ID IS NULL
-BEGIN
-PRINT 'stop ID IS NULL'
-RAISERROR ('CHECK stop ID', 11, 1)
-RETURN
-END
-
 BEGIN TRAN T1
 INSERT INTO tblBOARDING (TransportationID, PassengerID, StopID)
 VALUES (@T_ID, @P_ID, @S_ID)
@@ -228,8 +210,78 @@ ELSE
  COMMIT TRAN T1
 GO
 
---business rule 1
--- passengers cannot be under 10 and ride the bus in certain neighborhoods going south
+SELECT * FROM tblNEIGHBORHOOD
+--synthetic transaction to populate tblBOARDING
+CREATE PROCEDURE Wrapper_INSERT_BOARDING
+@RUN INT
+AS
+DECLARE @R_PK INT
+DECLARE @V_PK INT
+DECLARE @E_PK INT
+DECLARE @P_PK INT
+DECLARE @N_PK INT
+DECLARE @SD_PK INT
+DECLARE @S_PK INT
+DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
+DECLARE @V_COUNT INT = (SELECT COUNT(*) FROM tblVEHICLE)
+DECLARE @E_COUNT INT = (SELECT COUNT(*) FROM tblEMPLOYEE)
+DECLARE @P_COUNT INT = (SELECT COUNT(*) FROM tblPASSENGER)
+DECLARE @N_COUNT INT = (SELECT COUNT(*) FROM tblNEIGHBORHOOD)
+DECLARE @SD_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
+DECLARE @S_COUNT INT = (SELECT COUNT(*) FROM tblSTOP)
+DECLARE @RN3 varchar(30), @VN3 varchar(30), @EFN3 varchar(30),
+    @ELN3 varchar(30), @EBD3 date, @Pmail3 varchar(50), @NName3 varchar(50),
+    @zippy3 INT, @DName3 varchar(30), @SN3 varchar(30)
+
+WHILE @RUN > 0
+BEGIN
+    SET @R_PK = (SELECT RAND() * @R_COUNT + 1)
+    SET @RN3 = (SELECT routeName FROM tblROUTE WHERE RouteID = @R_PK)
+
+    SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
+    SET @VN3 = (SELECT vehichleName FROM tblVEHICLE WHERE VehicleID = @V_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EFN3 = (SELECT EmployeeFirstName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @ELN3 = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EBD3 = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @P_PK = (SELECT RAND() * @P_COUNT + 1)
+    SET @Pmail3 = (SELECT PassengerEmail FROM tblPASSENGER WHERE PassengerID = @P_PK)
+
+    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+    SET @NName3 = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+    SET @zippy3 = (SELECT ZipCode FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+    SET @SD_PK = (SELECT RAND() * @SD_COUNT + 1)
+    SET @DName3 = (SELECT DirectionName FROM tblSTOP_DIRECTION WHERE DirectionID = @SD_PK)
+
+    SET @S_PK = (SELECT RAND() * @S_COUNT + 1)
+    SET @SN3 = (SELECT StopName FROM tblSTOP WHERE stopID = @S_PK)
+
+EXEC INSERT_BOARDING
+@RN2 = @RN3,
+@VN2 = @VN3,
+@EFN2 = @EFN3,
+@ELN2 = @ELN3,
+@EBD2 = @EBD3,
+@Pmail2 = @Pmail3,
+@NName2 = @NName3,
+@zippy2 = @zippy3,
+@DName2  = @DName3,
+@SN2 = @SN3
+
+SET @RUN = @RUN -1
+END
+GO
+
+--business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
 RETURNS INTEGER
 AS
@@ -256,8 +308,7 @@ ALTER TABLE tblPASSENGER with nocheck
 ADD CONSTRAINT const_underAge
 CHECK (dbo.proj01_underAge() = 0)
 
--- business rule 2
--- School buses cannot have any passengers over 22 and must have edu emails
+-- business rule 2 School buses cannot have any passengers over 22 and must have edu emails
 CREATE FUNCTION dbo.proj01_maxPassengers()
 RETURNS INTEGER
 AS
@@ -282,8 +333,7 @@ ALTER TABLE tblBOARDING with nocheck
 ADD CONSTRAINT const_maxBoarding
 CHECK (dbo.proj01_maxPassengers() = 0)
 
--- computed column 1
--- Stop use frequency
+-- computed column 1 Stop use frequency
 CREATE FUNCTION fn_stopPop(@PK INT)
 RETURNS varchar(30)
     AS
@@ -299,8 +349,7 @@ RETURNS varchar(30)
 	ADD fn_stopPop
 	AS (DBO.fn_stopPop(StopID))
 
--- computed column 2
--- number of stops in each direction
+-- computed column 2 number of stops in each direction
 CREATE FUNCTION fn_DirectionPop(@PK varchar(30))
 RETURNS varchar(30)
     AS
