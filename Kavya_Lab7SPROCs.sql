@@ -102,7 +102,7 @@ DELETE FROM WORKING_PEEPS_Customers
 	WHERE CustomerID = @PEEP_PK
 END
 
-EXEC wrapper_insertPassenger 1000
+EXEC wrapper_insertPassenger 2000
 
 Select * from tblPASSENGER
 
@@ -185,15 +185,34 @@ DECLARE @R_PK INT
 DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
 DECLARE @V_PK INT
 DECLARE @V_COUNT INT = (Select COUNT(*) from tblVEHICLE)
+DECLARE @VN varchar(30), @RN varchar(30), @EFN varchar(30), @ELN varchar(30), @EDOB Date
 
 
-WHILE @RUN > 0 
-BEGIN 
-SET @E_PK = (SELECT RAND() * @E_COUNT + 1) 
-SET @R_PK = (SELECT RAND() * @R_COUNT + 1) 
-SET @V_PK = (SELECT RAND() * @V_COUNT + 1) 
+WHILE @RUN > 0
+BEGIN
 
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EFN = (SELECT employeeFirstName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
+    SET @ELN = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
+    SET @EDOB = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
 
-EXEC insert
+    SET @R_PK = (SELECT RAND() * @R_COUNT + 1)
+    SET @RN = (SELECT RouteName FROM tblROUTE WHERE RouteID = @R_PK)
 
-set @RUN = @RUN - 1
+    SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
+    SET @VN = (SELECT VehicleName from tblVEHICLE WHERE VehicleID = @V_PK)
+
+EXEC proj01_insert_xport
+@VeName = @VN,
+@RouName = @RN,
+@EFName = @EFN,
+@ELName = @ELN,
+@EmpDOB = @EDOB
+
+SET @RUN = @RUN - 1
+
+END
+GO
+
+EXEC wrapper_insertXport
+    @RUN = 10

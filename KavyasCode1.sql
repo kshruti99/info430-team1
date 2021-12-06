@@ -186,4 +186,6 @@ DECLARE @RET INTEGER = (Select COUNT(B.BoardingID) FROM tblBOARDING B
 
 	Select * from tblTRANSPORTATION
 
-t
+	EXEC wrapper_insertXport
+    @RUN = 10
+
