@@ -150,16 +150,19 @@ GROUP BY (CASE
         ELSE 'Traditional Riders'
         END)
 GO
-SELECT * FROM vwPassengerBoardingCount;
+-- SELECT * FROM vwPassengerBoardingCount;
 
 -- View2:
-CREATE VIEW vwMostPopularVehicleTypes
+ALTER VIEW vwMostPopularVehicleTypes
 AS
-    SELECT VT.VehicleTypeID, VT.VehicleTypeName,
-           DENSE_RANK() OVER (ORDER BY (COUNT(B.BoardingID))) AS D_Rank
+    SELECT VT.VehicleTypeName,
+           DENSE_RANK() OVER (ORDER BY (COUNT(B.BoardingID)) DESC) AS D_Rank,
+           COUNT(B.BoardingID) AS BoardingCount
 FROM tblVEHICLE_TYPE VT
 JOIN tblVEHICLE V ON VT.VehicleTypeID = V.VehicleTypeID
 JOIN tblTRANSPORTATION TR ON V.VehicleID = TR.VehicleID
 JOIN tblBOARDING B ON TR.TransportationID = B.TransportationID
-GROUP BY VT.VehicleTypeID, VT.VehicleTypeName
+GROUP BY VT.VehicleTypeName
 GO
+
+-- SELECT * FROM vwMostPopularVehicleTypes;
