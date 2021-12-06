@@ -181,3 +181,9 @@ DECLARE @RET INTEGER = (Select COUNT(B.BoardingID) FROM tblBOARDING B
 	AS (DBO.FN_Num_Boardings(PassengerID))
 
 	Select * from tblPASSENGER
+
+	-- View 1: 
+
+	Select * from tblTRANSPORTATION
+
+t
