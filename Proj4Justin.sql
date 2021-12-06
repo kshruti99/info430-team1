@@ -29,8 +29,8 @@ WHERE VehicleID = @VID
 GO
 
 
-ALTER TABLE tblVEHICLE
-ADD VehicleName varchar(50) NOT NULL DEFAULT 'tbd'
+-- ALTER TABLE tblVEHICLE
+-- ADD VehicleName varchar(50) NOT NULL DEFAULT 'tbd'
 
 
 -- Test

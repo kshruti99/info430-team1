@@ -52,7 +52,7 @@ DECLARE @VT_ID INT
         END
 
     BEGIN TRAN T1
-INSERT INTO tblVEHICLE(VehicleTypeID, VehichleName)
+INSERT INTO tblVEHICLE(VehicleTypeID, VehicleName)
 VALUES (@VT_ID, @VName)
     IF @@ERROR <> 0
         BEGIN
@@ -64,7 +64,7 @@ GO
 
 -- Create vehicle name tempTable
 CREATE TABLE #tempVehicleName
-(VechileNameID INT IDENTITY(1, 1) PRIMARY KEY,
+(VehicleNameID INT IDENTITY(1, 1) PRIMARY KEY,
 VehicleName varchar(50) NOT NULL)
 GO
 INSERT INTO #tempVehicleName(VehicleName)
@@ -83,7 +83,7 @@ BEGIN
     SET @VT_PK = (SELECT RAND() * @VehicleTypeCount + 1)
     SET @VN_PK = (SELECT RAND() * @VehicleNameCount + 1)
     SET @WrapperVehicleTypeName = (SELECT VehicleTypeName FROM tblVEHICLE_TYPE WHERE VehicleTypeID = @VT_PK)
-    SET @WrapperVehicleName = (SELECT VehicleName FROM #tempVehicleName WHERE VechileNameID = @VN_PK)
+    SET @WrapperVehicleName = (SELECT VehicleName FROM #tempVehicleName WHERE VehicleNameID = @VN_PK)
     EXEC InsertVehicle
     @VehicleTName = @WrapperVehicleTypeName,
     @VName = @WrapperVehicleName
@@ -92,7 +92,7 @@ BEGIN
 END
 
 EXEC Wrapper_Insert_Vehicle
-10
+3000
 
 SELECT * FROM tblVEHICLE
 
