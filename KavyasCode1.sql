@@ -129,6 +129,10 @@ ALTER TABLE tblEmployee with nocheck
 ADD CONSTRAINT ck_age_trprt_type
 CHECK(dbo.proj01_employeeAge() = 0)
 
+-- dropping temporarily 
+ALTER TABLE tblEmployee
+DROP CONSTRAINT ck_age_trprt_type
+
 -- Business Rule 2: Only passengers with edu emails can be classified as Student Passenger Type
 ALTER FUNCTION dbo.ck_student_passType()
 RETURNS INTEGER

@@ -181,7 +181,7 @@ DECLARE @R_PK INT
 DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
 DECLARE @V_PK INT
 DECLARE @V_COUNT INT = (Select COUNT(*) from tblVEHICLE)
-DECLARE @VN varchar(30), @RN varchar(30), @EFN varchar(30), @ELN varchar(30), @EDOB Date
+DECLARE @VN varchar(50), @RN varchar(30), @EFN varchar(30), @ELN varchar(30), @EDOB Date
 
 
 WHILE @RUN > 0
@@ -210,8 +210,7 @@ SET @RUN = @RUN - 1
 END
 GO
 
-EXEC wrapper_insertXport
-    @RUN = 10
+
 
 	Select * from tblTRANSPORTATION
 	ORDER BY EmployeeID
