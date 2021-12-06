@@ -210,8 +210,78 @@ ELSE
  COMMIT TRAN T1
 GO
 
---business rule 1
--- passengers cannot be under 10 and ride the bus in certain neighborhoods going south
+SELECT * FROM tblNEIGHBORHOOD
+--synthetic transaction to populate tblBOARDING
+CREATE PROCEDURE Wrapper_INSERT_BOARDING
+@RUN INT
+AS
+DECLARE @R_PK INT
+DECLARE @V_PK INT
+DECLARE @E_PK INT
+DECLARE @P_PK INT
+DECLARE @N_PK INT
+DECLARE @SD_PK INT
+DECLARE @S_PK INT
+DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
+DECLARE @V_COUNT INT = (SELECT COUNT(*) FROM tblVEHICLE)
+DECLARE @E_COUNT INT = (SELECT COUNT(*) FROM tblEMPLOYEE)
+DECLARE @P_COUNT INT = (SELECT COUNT(*) FROM tblPASSENGER)
+DECLARE @N_COUNT INT = (SELECT COUNT(*) FROM tblNEIGHBORHOOD)
+DECLARE @SD_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
+DECLARE @S_COUNT INT = (SELECT COUNT(*) FROM tblSTOP)
+DECLARE @RN3 varchar(30), @VN3 varchar(30), @EFN3 varchar(30),
+    @ELN3 varchar(30), @EBD3 date, @Pmail3 varchar(50), @NName3 varchar(50),
+    @zippy3 INT, @DName3 varchar(30), @SN3 varchar(30)
+
+WHILE @RUN > 0
+BEGIN
+    SET @R_PK = (SELECT RAND() * @R_COUNT + 1)
+    SET @RN3 = (SELECT routeName FROM tblROUTE WHERE RouteID = @R_PK)
+
+    SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
+    SET @VN3 = (SELECT vehichleName FROM tblVEHICLE WHERE VehicleID = @V_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EFN3 = (SELECT EmployeeFirstName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @ELN3 = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EBD3 = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE employeeID = @E_PK)
+
+    SET @P_PK = (SELECT RAND() * @P_COUNT + 1)
+    SET @Pmail3 = (SELECT PassengerEmail FROM tblPASSENGER WHERE PassengerID = @P_PK)
+
+    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+    SET @NName3 = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+    SET @zippy3 = (SELECT ZipCode FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+    SET @SD_PK = (SELECT RAND() * @SD_COUNT + 1)
+    SET @DName3 = (SELECT DirectionName FROM tblSTOP_DIRECTION WHERE DirectionID = @SD_PK)
+
+    SET @S_PK = (SELECT RAND() * @S_COUNT + 1)
+    SET @SN3 = (SELECT StopName FROM tblSTOP WHERE stopID = @S_PK)
+
+EXEC INSERT_BOARDING
+@RN2 = @RN3,
+@VN2 = @VN3,
+@EFN2 = @EFN3,
+@ELN2 = @ELN3,
+@EBD2 = @EBD3,
+@Pmail2 = @Pmail3,
+@NName2 = @NName3,
+@zippy2 = @zippy3,
+@DName2  = @DName3,
+@SN2 = @SN3
+
+SET @RUN = @RUN -1
+END
+GO
+
+--business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
 RETURNS INTEGER
 AS
@@ -238,8 +308,7 @@ ALTER TABLE tblPASSENGER with nocheck
 ADD CONSTRAINT const_underAge
 CHECK (dbo.proj01_underAge() = 0)
 
--- business rule 2
--- School buses cannot have any passengers over 22 and must have edu emails
+-- business rule 2 School buses cannot have any passengers over 22 and must have edu emails
 CREATE FUNCTION dbo.proj01_maxPassengers()
 RETURNS INTEGER
 AS
@@ -264,8 +333,7 @@ ALTER TABLE tblBOARDING with nocheck
 ADD CONSTRAINT const_maxBoarding
 CHECK (dbo.proj01_maxPassengers() = 0)
 
--- computed column 1
--- Stop use frequency
+-- computed column 1 Stop use frequency
 CREATE FUNCTION fn_stopPop(@PK INT)
 RETURNS varchar(30)
     AS
@@ -281,8 +349,7 @@ RETURNS varchar(30)
 	ADD fn_stopPop
 	AS (DBO.fn_stopPop(StopID))
 
--- computed column 2
--- number of stops in each direction
+-- computed column 2 number of stops in each direction
 CREATE FUNCTION fn_DirectionPop(@PK varchar(30))
 RETURNS varchar(30)
     AS
