@@ -74,7 +74,7 @@ CREATE PROCEDURE GetVehicleID
 @VID INT OUTPUT
 AS
 SET @VID = (SELECT vehicleID FROM tblVEHICLE
-        WHERE VehichleName = @VName)
+        WHERE VehicleName = @VName)
 GO
 
 CREATE PROCEDURE GetEmployeeID
@@ -87,7 +87,7 @@ SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirs
     EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
 GO
 
-ALTER PROCEDURE GetTransportationID
+CREATE PROCEDURE GetTransportationID
 @RouteN varchar(30),
 @VehicleN varchar(30),
 @EBday date,
@@ -99,7 +99,7 @@ SET @TID = (SELECT transportationID FROM tblTRANSPORTATION T
         JOIN tblROUTE R ON T.RouteID = R.RouteID
         JOIN tblVEHICLE V ON T.VehicleID = V.VehicleID
         JOIN tblEMPLOYEE E on T.EmployeeID = E.EmployeeID
-        WHERE R.routeName = @RouteN AND V.VehichleName = @VehicleN
+        WHERE R.routeName = @RouteN AND V.VehicleName = @VehicleN
         AND E.EmployeeFirstName = @EFName AND E.EmployeeLastName = @ELName
         AND E.EmployeeDOB = @EBday)
 GO
@@ -134,18 +134,6 @@ SET @SID = (SELECT stopID FROM tblSTOP S
             AND SD.DirectionName = @Dname AND S.stopName = @SName)
 GO
 
---EXEC INSERT_BOARDING
---@RN2 = 'Bx28',
---@VN2 = 'NYCT_8041',
---@EFN2 = 'Jamila',
---@ELN2 = 'Kyzar',
---@EBD2 = '1959-04-12',
---@Pmail2 = 'kavyee@uw.edu',
---@NName2 = 'Northwest Brooklyn',
---@zippy2 = 11215,
---@DName2 = 'Northbound',
---@SN2 = 'LIVONIA AV/ASHFORD ST'
-
 --sproc 2
 ALTER PROCEDURE INSERT_BOARDING
 @RN2 varchar(30),
@@ -162,6 +150,16 @@ AS
 DECLARE
 @T_ID INT, @P_ID INT, @S_ID INT
 
+EXEC GetPassengerID
+@Pemail = @Pmail2,
+@Passengery = @P_ID OUTPUT
+IF @P_ID IS NULL
+BEGIN
+PRINT 'passenger ID IS NULL'
+RAISERROR ('CHECK passenger ID', 11, 1)
+RETURN
+END
+
 EXEC GetStopID
 @NeighName = @NName2,
 @ZipC = @zippy2,
@@ -172,16 +170,6 @@ IF @S_ID IS NULL
 BEGIN
 PRINT 'stop ID IS NULL'
 RAISERROR ('CHECK stop ID', 11, 1)
-RETURN
-END
-
-EXEC GetPassengerID
-@Pemail = @Pmail2,
-@Passengery = @P_ID OUTPUT
-IF @P_ID IS NULL
-BEGIN
-PRINT 'passenger ID IS NULL'
-RAISERROR ('CHECK passenger ID', 11, 1)
 RETURN
 END
 
@@ -210,9 +198,8 @@ ELSE
  COMMIT TRAN T1
 GO
 
-SELECT * FROM tblNEIGHBORHOOD
 --synthetic transaction to populate tblBOARDING
-CREATE PROCEDURE Wrapper_INSERT_BOARDING
+ALTER PROCEDURE Wrapper_INSERT_BOARDING
 @RUN INT
 AS
 DECLARE @R_PK INT
@@ -239,7 +226,7 @@ BEGIN
     SET @RN3 = (SELECT routeName FROM tblROUTE WHERE RouteID = @R_PK)
 
     SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
-    SET @VN3 = (SELECT vehichleName FROM tblVEHICLE WHERE VehicleID = @V_PK)
+    SET @VN3 = (SELECT vehicleName FROM tblVEHICLE WHERE VehicleID = @V_PK)
 
     SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
     SET @EFN3 = (SELECT EmployeeFirstName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
@@ -280,6 +267,9 @@ EXEC INSERT_BOARDING
 SET @RUN = @RUN -1
 END
 GO
+
+EXEC Wrapper_INSERT_BOARDING
+    @RUN = 10
 
 --business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
@@ -387,3 +377,15 @@ FROM tblEMPLOYEE E
     JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID) as A
 	WHERE oldEmps <= 3
 GO
+
+-- for presentation:
+-- visualization 1
+SELECT A.EmployeeFirstName, A.EmployeeLastName, A.EmployeeAge, A.EmployeeTypeName FROM
+        (SELECT E.EmployeeFirstName, E.EmployeeLastName,
+E.EmployeeDOB, DATEDIFF(YEAR, E.EmployeeDOB, GETDATE()) AS EmployeeAge, ET.EmployeeTypeName
+FROM tblEMPLOYEE E
+JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID
+WHERE ET.EmployeeTypeName = 'water taxi inspector') AS A
+
+-- visualization 2
+
