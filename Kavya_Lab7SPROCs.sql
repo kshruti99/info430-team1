@@ -118,11 +118,11 @@ Select * from WORKING_PEEPS_Customers
 
 -- Populate tblTransportation!!!
 -- vehicle, route, employee
-CREATE PROCEDURE proj01_insert_xport 
+CREATE PROCEDURE proj01_insert_xport
 @VeName varchar(50),
-@RouName varchar(50), 
-@EFName varchar(50), 
-@ELName varchar(50), 
+@RouName varchar(50),
+@EFName varchar(50),
+@ELName varchar(50),
 @EmpDOB DATE
 AS
 DECLARE @V_ID INT, @E_ID INT, @R_ID INT
@@ -130,52 +130,48 @@ DECLARE @V_ID INT, @E_ID INT, @R_ID INT
 EXEC GetVehicleID
 @VName = @VeName,
 @VID = @V_ID OUTPUT
-
-IF @V_ID IS NULL 
-	BEGIN 
+IF @V_ID IS NULL
+	BEGIN
 		PRINT 'Vehicle ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Vehicle', 11, 1)
 		RETURN
-	END 
-
+	END
 
 EXEC GetRouteID
 @RName = @RouName,
 @Routy = @R_ID OUTPUT
-
-IF @R_ID IS NULL 
-	BEGIN 
+IF @R_ID IS NULL
+	BEGIN
 		PRINT 'Route ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Route', 11, 1)
 		RETURN
-	END 
+	END
 
 EXEC GetEmployeeID
 @EFirstName = @EFName,
 @ELastName = @ELName,
 @EDOB = @EmpDOB,
 @Empy = @E_ID OUTPUT
-
-IF @E_ID IS NULL 
-	BEGIN 
+IF @E_ID IS NULL
+	BEGIN
 		PRINT 'Emp ID IS NULL, PLEASE FIX'
 		RAISERROR ('CHECK SPELLING OF Emp', 11, 1)
 		RETURN
-	END 
+	END
+
 BEGIN TRAN T1
 INSERT INTO tblTRANSPORTATION(VehicleID, RouteID, EmployeeID)
 	VALUES (@V_ID, @R_ID, @E_ID)
 
-IF @@ERROR <> 0 
-	BEGIN 
-		ROLLBACK TRAN T1 
+IF @@ERROR <> 0
+	BEGIN
+		ROLLBACK TRAN T1
 	END
-ELSE 
+ELSE
 	COMMIT TRAN T1
-GO 
+GO
 
 -- Wrapper
-
 CREATE PROCEDURE wrapper_insertXport
 @RUN INT
 AS
@@ -185,15 +181,34 @@ DECLARE @R_PK INT
 DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
 DECLARE @V_PK INT
 DECLARE @V_COUNT INT = (Select COUNT(*) from tblVEHICLE)
+DECLARE @VN varchar(30), @RN varchar(30), @EFN varchar(30), @ELN varchar(30), @EDOB Date
 
 
-WHILE @RUN > 0 
-BEGIN 
-SET @E_PK = (SELECT RAND() * @E_COUNT + 1) 
-SET @R_PK = (SELECT RAND() * @R_COUNT + 1) 
-SET @V_PK = (SELECT RAND() * @V_COUNT + 1) 
+WHILE @RUN > 0
+BEGIN
 
+    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+    SET @EFN = (SELECT employeeFirstName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
+    SET @ELN = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
+    SET @EDOB = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE EmployeeID = @E_PK)
 
-EXEC insert
+    SET @R_PK = (SELECT RAND() * @R_COUNT + 1)
+    SET @RN = (SELECT RouteName FROM tblROUTE WHERE RouteID = @R_PK)
 
-set @RUN = @RUN - 1
+    SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
+    SET @VN = (SELECT VehicleName from tblVEHICLE WHERE VehicleID = @V_PK)
+
+EXEC proj01_insert_xport
+@VeName = @VN,
+@RouName = @RN,
+@EFName = @EFN,
+@ELName = @ELN,
+@EmpDOB = @EDOB
+
+SET @RUN = @RUN - 1
+
+END
+GO
+
+EXEC wrapper_insertXport
+    @RUN = 10
