@@ -108,4 +108,138 @@ GO
 
 EXEC wrapperInsertEmployee 5000
 
-SELECT COUNT(*) FROM tblEMPLOYEE
+
+/* Shruti second stored procedure... delete employee from table */
+
+ALTER PROCEDURE deleteEmployee_Proj01
+@Firsty varchar(50), 
+@Lasty varchar(50), 
+@EmpyDOB DATE, 
+@ETypeName varchar(50)
+AS 
+	DECLARE @TYPE_ID INT
+
+	EXEC getEmployeeTypeId_PROJ01 
+	@EmpTypeName = @ETypeName, 
+	@EmpTypeId = @TYPE_ID OUTPUT 
+
+	IF @TYPE_ID IS NULL 
+		BEGIN 
+			PRINT 'Employee TYPE ID is NULL...time to terminate'
+			RAISERROR ('Check spelling of EMPLOYEE TYPE ID as there is an error', 11, 1)
+			RETURN
+		END 
+
+	BEGIN TRAN T1
+		DELETE FROM tblEMPLOYEE
+			WHERE EmployeeTypeID = @TYPE_ID AND
+			EmployeeFirstName = @Firsty AND
+			EmployeeLastName = @Lasty AND
+			EmployeeDOB = @EmpyDOB
+
+		IF @@ERROR <> 0 
+			BEGIN 
+				ROLLBACK TRAN T1 
+			END
+		ELSE 
+			COMMIT TRAN T1
+GO 
+
+SELECT * from tblEMPLOYEE E
+JOIN tblEMPLOYEE_TYPE ET ON E.EmployeeTypeID = ET.EmployeeTypeID
+ORDER BY EmployeeID DESC
+
+EXEC insertEmployee_Proj01
+@Firsty = 'Tam',
+@Lasty = 'Vangemert',
+@EmpyDOB = '2099-12-01',
+@ETypeName = 'Bus Driver'
+
+
+
+-- Shruti Business Rule 1
+-- If Passenger age > 65 then Passenger type = Senior (PASSENGER
+CREATE FUNCTION dbo.senior_passenger_type_proj01()
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+	IF EXISTS (SELECT * from tblPASSENGER P 
+		JOIN tblPASSENGER_TYPE PT on P.PassengerTypeID = PT.PassengerTypeID
+		WHERE PT.PassengerTypeName = 'Senior'
+		AND P.PassengerDOB > DateAdd(YEAR, -65, getdate()))
+		BEGIN
+			SET @RET = 1
+		END
+	RETURN @RET
+END 
+GO
+
+ALTER TABLE tblPassenger with nocheck
+ADD CONSTRAINT senior_PassengerAge_check
+CHECK (dbo.senior_passenger_type_proj01() = 0)
+GO
+
+
+-- Shruti Business Rule 1
+-- If Passenger age > 65 then Passenger type = Senior (PASSENGER
+CREATE FUNCTION dbo.minor_passenger_type_proj01()
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+	IF EXISTS (SELECT * from tblPASSENGER P 
+		JOIN tblPASSENGER_TYPE PT on P.PassengerTypeID = PT.PassengerTypeID
+		WHERE PT.PassengerTypeName = 'Minor'
+		AND P.PassengerDOB > DateAdd(YEAR, -18, getdate()))
+		BEGIN
+			SET @RET = 1
+		END
+	RETURN @RET
+END 
+GO
+
+ALTER TABLE tblPassenger with nocheck
+ADD CONSTRAINT minor_PassengerAge_check
+CHECK (dbo.minor_passenger_type_proj01() = 0)
+GO
+
+
+-- Shruti Computed Column 1
+-- Average age of employees
+CREATE FUNCTION EmployeeType_AvgAge_Fn(@ETID INTEGER)
+RETURNS NUMERIC (4, 1)
+AS 
+BEGIN
+	DECLARE @RET NUMERIC = (SELECT AVG(DATEDIFF(YEAR, E.EmployeeDOB, GETDATE())) 
+		FROM tblEMPLOYEE E
+		JOIN tblEMPLOYEE_TYPE ET ON E.EmployeeTypeID = ET.EmployeeTypeID
+		WHERE ET.EmployeeTypeID = @ETID)
+		
+		RETURN @RET
+END 
+GO
+
+
+ALTER TABLE tblEmployeeType
+ADD FN_PassType_AvgAge
+AS (DBO.EmployeeType_AvgAge_Fn(EmployeeTypeID))
+
+
+-- Computed Column 2: Number of transportations (aka rides) for each emloyee 
+CREATE FUNCTION Num_Transportations_Emp_FN(@PK INTEGER)
+RETURNS INTEGER 
+AS 
+BEGIN 
+DECLARE @RET INTEGER = (SELECT COUNT(T.TransportationID) 
+	FROM tblTRANSPORTATION T
+	JOIN tblEMPLOYEE E on T.EmployeeID = E.EmployeeID
+	WHERE E.EmployeeID = @PK)
+	
+	RETURN @RET
+END 
+GO 
+
+ALTER TABLE tblEmployee
+ADD Num_Transportations_Emp_FN
+AS (DBO.Num_Transportations_Emp_FN(EmployeeID))
