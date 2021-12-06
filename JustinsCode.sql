@@ -36,9 +36,10 @@ AS
 GO
 
 -- Store procedure to insert vehicle
-CREATE PROCEDURE InsertVehicle @VehicleTName varchar(50)
+ALTER PROCEDURE InsertVehicle @VehicleTName varchar(50),
+                              @VName varchar(50)
 AS
-DECLARE @VT_ID INT, @R_ID INT
+DECLARE @VT_ID INT
     EXEC GetVehicleTypeID
          @VTName = @VehicleTName,
          @VeTy = @VT_ID OUTPUT
@@ -51,8 +52,8 @@ DECLARE @VT_ID INT, @R_ID INT
         END
 
     BEGIN TRAN T1
-INSERT INTO tblVEHICLE(VehicleTypeID)
-VALUES (@VT_ID)
+INSERT INTO tblVEHICLE(VehicleTypeID, VehichleName)
+VALUES (@VT_ID, @VName)
     IF @@ERROR <> 0
         BEGIN
             ROLLBACK TRAN T1
@@ -61,20 +62,31 @@ VALUES (@VT_ID)
         COMMIT TRAN T1
 GO
 
+-- Create vehicle name tempTable
+CREATE TABLE #tempVehicleName
+(VechileNameID INT IDENTITY(1, 1) PRIMARY KEY,
+VehicleName varchar(50) NOT NULL)
+GO
+INSERT INTO #tempVehicleName(VehicleName)
+SELECT VehicleRef FROM WORKING_COPY_TransportationData
+
 -- Synthetic transaction
-CREATE PROCEDURE Wrapper_Insert_Vehicle
+ALTER PROCEDURE Wrapper_Insert_Vehicle
 @RUN INT
 AS
-    DECLARE @VT_PK INT
+    DECLARE @VT_PK INT, @VN_PK INT
     DECLARE @VehicleTypeCount INT = (SELECT COUNT(*) FROM tblVEHICLE_TYPE)
-    DECLARE @WrapperVehicleTypeName varchar(50), @WrapperRouteName varchar(50)
+    DECLARE @VehicleNameCount INT = (SELECT COUNT(*) FROM #tempVehicleName)
+    DECLARE @WrapperVehicleTypeName varchar(50), @WrapperVehicleName varchar(50)
 WHILE @RUN > 0
 BEGIN
     SET @VT_PK = (SELECT RAND() * @VehicleTypeCount + 1)
+    SET @VN_PK = (SELECT RAND() * @VehicleNameCount + 1)
     SET @WrapperVehicleTypeName = (SELECT VehicleTypeName FROM tblVEHICLE_TYPE WHERE VehicleTypeID = @VT_PK)
-
+    SET @WrapperVehicleName = (SELECT VehicleName FROM #tempVehicleName WHERE VechileNameID = @VN_PK)
     EXEC InsertVehicle
-    @VehicleTName = @WrapperVehicleTypeName
+    @VehicleTName = @WrapperVehicleTypeName,
+    @VName = @WrapperVehicleName
 
     SET @RUN = @RUN - 1
 END
@@ -83,3 +95,10 @@ EXEC Wrapper_Insert_Vehicle
 10
 
 SELECT * FROM tblVEHICLE
+
+ALTER TABLE tblTRANSPORTATION
+ADD CONSTRAINT FK_TransportationVehicle
+FOREIGN KEY (VehicleID) REFERENCES tblVEHICLE(VehicleID)
+
+EXEC sp_rename 'dbo.tblVEHICLE.Vehicle', 'VehicleName', 'COLUMN';
+
