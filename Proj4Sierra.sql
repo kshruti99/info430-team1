@@ -69,15 +69,15 @@ SET @Routy = (SELECT RouteID
               WHERE RouteName = @RName)
 GO
 
-CREATE PROCEDURE GetVehicleID
+ALTER PROCEDURE GetVehicleID
 @VName varchar(30),
 @VID INT OUTPUT
 AS
 SET @VID = (SELECT vehicleID FROM tblVEHICLE
         WHERE VehicleName = @VName)
 GO
-
-CREATE PROCEDURE GetEmployeeID
+SELECT DISTINCT vehicleName FROM tblVEHICLE
+ALTER PROCEDURE GetEmployeeID
 @EFirstName varchar(30),
 @ELastName varchar(30),
 @EDOB Date,
@@ -87,7 +87,7 @@ SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirs
     EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
 GO
 
-CREATE PROCEDURE GetTransportationID
+/*ALTER PROCEDURE GetTransportationID
 @RouteN varchar(30),
 @VehicleN varchar(30),
 @EBday date,
@@ -102,16 +102,23 @@ SET @TID = (SELECT transportationID FROM tblTRANSPORTATION T
         WHERE R.routeName = @RouteN AND V.VehicleName = @VehicleN
         AND E.EmployeeFirstName = @EFName AND E.EmployeeLastName = @ELName
         AND E.EmployeeDOB = @EBday)
+GO */
+
+ALTER PROCEDURE GetTransportationID
+@TranName varchar(30),
+@TID INT OUTPUT
+AS
+SET @TID = (SELECT TransportationID FROM tblTRANSPORTATION WHERE transportationName = @TranName)
 GO
 
-CREATE PROCEDURE GetPassengerID
+ALTER PROCEDURE GetPassengerID
 @Pemail varchar(50),
 @Passengery INT OUTPUT
 AS
 SET @Passengery = (SELECT passengerID FROM tblPASSENGER WHERE PassengerEmail = @Pemail)
 GO
 
-CREATE PROCEDURE GetNeighborhoodID
+ALTER PROCEDURE GetNeighborhoodID
 @NName varchar(50),
 @ZCode INT,
 @Neighy INT OUTPUT
@@ -121,31 +128,18 @@ SET @Neighy = (SELECT neighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName
 GO
 
 ALTER PROCEDURE GetStopID
-@NeighName varchar(50),
-@ZipC INT,
-@Dname varchar(50),
 @SName varchar(30),
 @SID INT OUTPUT
 AS
 SET @SID = (SELECT stopID FROM tblSTOP S
-            JOIN tblNEIGHBORHOOD N ON N.neighborhoodID = S.neighborhoodID
-            JOIN tblSTOP_DIRECTION SD on S.DirectionID = SD.DirectionID
-            WHERE NeighborhoodName = @NeighName AND ZipCode = @ZipC
-            AND SD.DirectionName = @Dname AND S.stopName = @SName)
+            WHERE S.stopName = @SName)
 GO
 
 --sproc 2
 ALTER PROCEDURE INSERT_BOARDING
-@RN2 varchar(30),
-@VN2 varchar(30),
-@EFN2 varchar(30),
-@ELN2 varchar(30),
-@EBD2 Date,
+@TranspName varchar(30),
 @Pmail2 varchar(50),
-@NName2 varchar(50),
-@zippy2 INT,
-@SN2 varchar(30),
-@DName2 varchar(30)
+@SN2 varchar(30)
 AS
 DECLARE
 @T_ID INT, @P_ID INT, @S_ID INT
@@ -161,9 +155,6 @@ RETURN
 END
 
 EXEC GetStopID
-@NeighName = @NName2,
-@ZipC = @zippy2,
-@Dname = @DName2,
 @SName = @SN2,
 @SID = @S_ID OUTPUT
 IF @S_ID IS NULL
@@ -174,11 +165,7 @@ RETURN
 END
 
 EXEC GetTransportationID
-@RouteN = @RN2,
-@VehicleN = @VN2,
-@EFName = @EFN2,
-@ELName = @ELN2,
-@EBday = @EBD2,
+@TranName = @TranspName,
 @TID =  @T_ID OUTPUT
 IF @T_ID IS NULL
 BEGIN
@@ -202,66 +189,29 @@ GO
 ALTER PROCEDURE Wrapper_INSERT_BOARDING
 @RUN INT
 AS
-DECLARE @R_PK INT
-DECLARE @V_PK INT
-DECLARE @E_PK INT
 DECLARE @P_PK INT
-DECLARE @N_PK INT
-DECLARE @SD_PK INT
 DECLARE @S_PK INT
-DECLARE @R_COUNT INT = (SELECT COUNT(*) FROM tblROUTE)
-DECLARE @V_COUNT INT = (SELECT COUNT(*) FROM tblVEHICLE)
-DECLARE @E_COUNT INT = (SELECT COUNT(*) FROM tblEMPLOYEE)
+DECLARE @T_PK INT
 DECLARE @P_COUNT INT = (SELECT COUNT(*) FROM tblPASSENGER)
-DECLARE @N_COUNT INT = (SELECT COUNT(*) FROM tblNEIGHBORHOOD)
-DECLARE @SD_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
 DECLARE @S_COUNT INT = (SELECT COUNT(*) FROM tblSTOP)
-DECLARE @RN3 varchar(30), @VN3 varchar(30), @EFN3 varchar(30),
-    @ELN3 varchar(30), @EBD3 date, @Pmail3 varchar(50), @NName3 varchar(50),
-    @zippy3 INT, @DName3 varchar(30), @SN3 varchar(30)
+DECLARE @T_COUNT INT = (SELECT COUNT(*) FROM tblTRANSPORTATION)
+DECLARE @T_name varchar(30), @Pmail3 varchar(50), @SN3 varchar(30)
 
 WHILE @RUN > 0
 BEGIN
-    SET @R_PK = (SELECT RAND() * @R_COUNT + 1)
-    SET @RN3 = (SELECT routeName FROM tblROUTE WHERE RouteID = @R_PK)
-
-    SET @V_PK = (SELECT RAND() * @V_COUNT + 1)
-    SET @VN3 = (SELECT vehicleName FROM tblVEHICLE WHERE VehicleID = @V_PK)
-
-    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
-    SET @EFN3 = (SELECT EmployeeFirstName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
-
-    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
-    SET @ELN3 = (SELECT EmployeeLastName FROM tblEMPLOYEE WHERE employeeID = @E_PK)
-
-    SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
-    SET @EBD3 = (SELECT EmployeeDOB FROM tblEMPLOYEE WHERE employeeID = @E_PK)
 
     SET @P_PK = (SELECT RAND() * @P_COUNT + 1)
     SET @Pmail3 = (SELECT PassengerEmail FROM tblPASSENGER WHERE PassengerID = @P_PK)
 
-    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
-    SET @NName3 = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
-
-    SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
-    SET @zippy3 = (SELECT ZipCode FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
-
-    SET @SD_PK = (SELECT RAND() * @SD_COUNT + 1)
-    SET @DName3 = (SELECT DirectionName FROM tblSTOP_DIRECTION WHERE DirectionID = @SD_PK)
-
-    SET @S_PK = (SELECT RAND() * @S_COUNT + 1)
+    SET @S_PK = (SELECT RAND() * @S_COUNT + 1 + 13624)
     SET @SN3 = (SELECT StopName FROM tblSTOP WHERE stopID = @S_PK)
 
+    SET @T_PK = (SELECT RAND() * @T_COUNT + 1 + 8384)
+    SET @T_name = (SELECT transportationName FROM tblTRANSPORTATION WHERE TransportationID = @T_PK)
+
 EXEC INSERT_BOARDING
-@RN2 = @RN3,
-@VN2 = @VN3,
-@EFN2 = @EFN3,
-@ELN2 = @ELN3,
-@EBD2 = @EBD3,
+@TranspName = @T_name,
 @Pmail2 = @Pmail3,
-@NName2 = @NName3,
-@zippy2 = @zippy3,
-@DName2  = @DName3,
 @SN2 = @SN3
 
 SET @RUN = @RUN -1
@@ -269,7 +219,12 @@ END
 GO
 
 EXEC Wrapper_INSERT_BOARDING
-    @RUN = 10
+    @RUN = 3000
+SELECT * FROM tblBOARDING
+SELECT * FROM tblTRANSPORTATION
+SELECT COUNT(vehicleName) FROM tblVEHICLE
+SELECT COUNT(DISTINCT vehicleName) FROM tblVEHICLE
+EXEC wrapper_insertXport 10
 
 --business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
@@ -388,4 +343,6 @@ JOIN tblEMPLOYEE_TYPE ET on E.EmployeeTypeID = ET.EmployeeTypeID
 WHERE ET.EmployeeTypeName = 'water taxi inspector') AS A
 
 -- visualization 2
+
+
 
