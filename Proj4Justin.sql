@@ -124,37 +124,33 @@ AS (dbo.fn_AveragePassengerAgeEachTransportation(TransportationID))
 
 -- Views
 -- View1:
-CREATE VIEW vwPassengerBoardingCount
+ALTER VIEW vwPassengerBoardingCount
 AS
     SELECT (CASE
-        WHEN HybridBoardingCount > 500
+        WHEN A.VehicleTypeName = 'Hybrid bus' AND HybridBoardingCount > 1
         THEN 'Environment Friendly'
-        WHEN HybridBoardingCount BETWEEN 200 AND 500
+        WHEN A.VehicleTypeName = 'Hybrid bus' AND HybridBoardingCount BETWEEN 0 AND 1
         THEN 'Becoming Environment Friendly'
-        WHEN HybridBoardingCount BETWEEN 100 AND 200
-        THEN 'Changing Mind'
         ELSE 'Traditional Riders'
         END) AS LabelsForPassengers, COUNT(*) AS NumberOfPassengers
 FROM (
-SELECT P.PassengerID, COUNT(B.BoardingID) AS HybridBoardingCount
+SELECT P.PassengerID, VT.VehicleTypeName, COUNT(B.BoardingID) AS HybridBoardingCount
 FROM tblPASSENGER P
 JOIN tblBOARDING B ON P.PassengerID = B.PassengerID
 JOIN tblTRANSPORTATION TR ON B.TransportationID = TR.TransportationID
 JOIN tblVEHICLE V ON TR.VehicleID = V.VehicleID
 JOIN tblVEHICLE_TYPE VT ON V.VehicleTypeID = VT.VehicleTypeID
-WHERE VT.VehicleTypeName = 'Hybrid bus'
-GROUP BY P.PassengerID) AS A
+GROUP BY P.PassengerID, VT.VehicleTypeName) AS A
 
 GROUP BY (CASE
-        WHEN HybridBoardingCount > 500
+        WHEN A.VehicleTypeName = 'Hybrid bus' AND HybridBoardingCount > 1
         THEN 'Environment Friendly'
-        WHEN HybridBoardingCount BETWEEN 200 AND 500
+        WHEN A.VehicleTypeName = 'Hybrid bus' AND HybridBoardingCount BETWEEN 0 AND 1
         THEN 'Becoming Environment Friendly'
-        WHEN HybridBoardingCount BETWEEN 100 AND 200
-        THEN 'Changing Mind'
         ELSE 'Traditional Riders'
         END)
 GO
+SELECT * FROM vwPassengerBoardingCount;
 
 -- View2:
 CREATE VIEW vwMostPopularVehicleTypes
