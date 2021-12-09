@@ -153,7 +153,7 @@ ELSE
  COMMIT TRAN T1
 GO
 
---synthetic transaction to populate tblBOARDING
+----------------- synthetic transaction to populate tblBOARDING --------
 CREATE PROCEDURE Wrapper_INSERT_BOARDING
 @RUN INT
 AS
@@ -188,6 +188,46 @@ GO
 
 EXEC Wrapper_INSERT_BOARDING
     @RUN = 3000
+    
+----------------------- synthetic transaction to populate tblSTOP -----------
+CREATE PROCEDURE Wrapper_INSERT_STOP
+@RUN INT
+AS
+DECLARE @N_PK INT
+DECLARE @D_PK INT
+DECLARE @S_PK INT
+DECLARE @ZC varchar(10)
+DECLARE @N_COUNT INT = (SELECT COUNT(*) FROM tblNEIGHBORHOOD)
+DECLARE @D_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
+DECLARE @S_COUNT INT = (SELECT COUNT(*) FROM tblSTOP_DIRECTION)
+DECLARE @NName varchar(30), @DName varchar(30), @SName varchar(30)
+
+WHILE @RUN > 0
+BEGIN
+
+SET @N_PK = (SELECT RAND() * @N_COUNT + 1)
+SET @NName = (SELECT NeighborhoodName FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+SET @D_PK = (SELECT RAND() * @D_COUNT + 1)
+SET @DName = (SELECT DirectionName FROM tblSTOP_DIRECTION WHERE DirectionID = @D_PK)
+
+SET @S_PK = (SELECT RAND() * @S_COUNT + 1)
+SET @SName = (SELECT OriginName FROM #tempStopName WHERE StopID = @S_PK)
+
+SET @ZC = (SELECT ZipCode FROM tblNEIGHBORHOOD WHERE NeighborhoodID = @N_PK)
+
+EXEC INSERT_STOP
+@N_Name = @NName,
+@D_Name  = @DName,
+@StopName  = @SName,
+@ZIP = @ZC
+
+SET @RUN = @RUN -1
+
+END
+GO
+
+EXEC Wrapper_INSERT_STOP 1000
 
 --business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
