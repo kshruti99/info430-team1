@@ -1,5 +1,3 @@
-Use INFO_430_Proj_01;
-
 ---------------------------------------------------- Sierra's Code -------------------------------------------------------------
 --------------- GetIDs needed for sproc 1
 Create Procedure GetDirectionID
