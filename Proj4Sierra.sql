@@ -1,5 +1,7 @@
 Use INFO_430_Proj_01;
--- getIDs needed for sproc 1
+
+---------------------------------------------------- Sierra's Code -------------------------------------------------------------
+--------------- GetIDs needed for sproc 1
 Create Procedure GetDirectionID
 @DirectionNamey varchar(50),
 @Directiony INT OUTPUT
@@ -15,7 +17,49 @@ AS
 SET @Neighborhoody = (SELECT NeighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NeighborhoodNamey AND ZipCode = @Zipy)
 GO
 
---sproc1
+--------------- GetIDs needed for sproc 2
+CREATE PROCEDURE GetVehicleID
+@VName varchar(30),
+@VID INT OUTPUT
+AS
+SET @VID = (SELECT vehicleID FROM tblVEHICLE
+        WHERE VehicleName = @VName)
+GO
+SELECT DISTINCT vehicleName FROM tblVEHICLE
+
+CREATE PROCEDURE GetEmployeeID
+@EFirstName varchar(30),
+@ELastName varchar(30),
+@EDOB Date,
+@Empy INT OUTPUT
+AS
+SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirstName AND
+    EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
+GO
+
+CREATE PROCEDURE GetTransportationID
+@TranName varchar(30),
+@TID INT OUTPUT
+AS
+SET @TID = (SELECT TransportationID FROM tblTRANSPORTATION WHERE transportationName = @TranName)
+GO
+
+CREATE PROCEDURE GetPassengerID
+@Pemail varchar(50),
+@Passengery INT OUTPUT
+AS
+SET @Passengery = (SELECT passengerID FROM tblPASSENGER WHERE PassengerEmail = @Pemail)
+GO
+
+CREATE PROCEDURE GetStopID
+@SName varchar(30),
+@SID INT OUTPUT
+AS
+SET @SID = (SELECT stopID FROM tblSTOP S
+            WHERE S.stopName = @SName)
+GO
+
+------------------- sproc1----------- 
 CREATE PROCEDURE INSERT_STOP
 @N_Name varchar(50),
 @D_Name varchar(50),
@@ -59,67 +103,8 @@ ELSE
  COMMIT TRAN T1
 GO
 
---GetIDs needed for sproc 2
-CREATE PROCEDURE GetRouteID
-@RName varchar(50),
-@Routy INT OUTPUT
-AS
-SET @Routy = (SELECT RouteID
-              FROM tblROUTE
-              WHERE RouteName = @RName)
-GO
-
-ALTER PROCEDURE GetVehicleID
-@VName varchar(30),
-@VID INT OUTPUT
-AS
-SET @VID = (SELECT vehicleID FROM tblVEHICLE
-        WHERE VehicleName = @VName)
-GO
-SELECT DISTINCT vehicleName FROM tblVEHICLE
-ALTER PROCEDURE GetEmployeeID
-@EFirstName varchar(30),
-@ELastName varchar(30),
-@EDOB Date,
-@Empy INT OUTPUT
-AS
-SET @Empy = (SELECT EmployeeID FROM tblEMPLOYEE WHERE EmployeeFirstName = @EFirstName AND
-    EmployeeLastName = @ELastName AND EmployeeDOB = @EDOB)
-GO
-
-ALTER PROCEDURE GetTransportationID
-@TranName varchar(30),
-@TID INT OUTPUT
-AS
-SET @TID = (SELECT TransportationID FROM tblTRANSPORTATION WHERE transportationName = @TranName)
-GO
-
-ALTER PROCEDURE GetPassengerID
-@Pemail varchar(50),
-@Passengery INT OUTPUT
-AS
-SET @Passengery = (SELECT passengerID FROM tblPASSENGER WHERE PassengerEmail = @Pemail)
-GO
-
-ALTER PROCEDURE GetNeighborhoodID
-@NName varchar(50),
-@ZCode INT,
-@Neighy INT OUTPUT
-AS
-SET @Neighy = (SELECT neighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NName
-                AND ZipCode = @ZCode)
-GO
-
-ALTER PROCEDURE GetStopID
-@SName varchar(30),
-@SID INT OUTPUT
-AS
-SET @SID = (SELECT stopID FROM tblSTOP S
-            WHERE S.stopName = @SName)
-GO
-
---sproc 2
-ALTER PROCEDURE INSERT_BOARDING
+---------------------------- sproc 2 ------------------
+CREATE PROCEDURE INSERT_BOARDING
 @TranspName varchar(30),
 @Pmail2 varchar(50),
 @SN2 varchar(30)
@@ -169,7 +154,7 @@ ELSE
 GO
 
 --synthetic transaction to populate tblBOARDING
-ALTER PROCEDURE Wrapper_INSERT_BOARDING
+CREATE PROCEDURE Wrapper_INSERT_BOARDING
 @RUN INT
 AS
 DECLARE @P_PK INT
@@ -203,11 +188,6 @@ GO
 
 EXEC Wrapper_INSERT_BOARDING
     @RUN = 3000
-SELECT * FROM tblBOARDING
-SELECT * FROM tblTRANSPORTATION
-SELECT COUNT(vehicleName) FROM tblVEHICLE
-SELECT COUNT(DISTINCT vehicleName) FROM tblVEHICLE
-EXEC wrapper_insertXport 10
 
 --business rule 1 passengers cannot be under 10 and ride the bus in certain neighborhoods going south
 CREATE FUNCTION dbo.proj01_underAge()
@@ -336,6 +316,3 @@ JOIN tblTRANSPORTATION TR ON V.VehicleID = TR.VehicleID
 JOIN tblBOARDING B ON TR.TransportationID = B.TransportationID
 GROUP BY VT.VehicleTypeID, VT.VehicleTypeName
 GO
-
-
-
