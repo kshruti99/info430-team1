@@ -81,7 +81,7 @@ StopID INT FOREIGN KEY REFERENCES tblSTOP (StopID) not null)
 GO
 
 ------------------------------------------------------------------ Sierra's Code ------------------------------------------------------------------------------
---------------- GetIDs needed for sproc 1
+--------------- GetIDs needed for sproc 1 (Sierra)
 Create Procedure GetDirectionID
 @DirectionNamey varchar(50),
 @Directiony INT OUTPUT
@@ -97,7 +97,7 @@ AS
 SET @Neighborhoody = (SELECT NeighborhoodID FROM tblNEIGHBORHOOD WHERE NeighborhoodName = @NeighborhoodNamey AND ZipCode = @Zipy)
 GO
 
---------------- GetIDs needed for sproc 2
+--------------- GetIDs needed for sproc 2 (Sierra)
 CREATE PROCEDURE GetVehicleID
 @VName varchar(30),
 @VID INT OUTPUT
@@ -139,7 +139,7 @@ SET @SID = (SELECT stopID FROM tblSTOP S
             WHERE S.stopName = @SName)
 GO
 
-------------------- sproc1----------- 
+------------------- sproc1----------- (Sierra)
 CREATE PROCEDURE INSERT_STOP
 @N_Name varchar(50),
 @D_Name varchar(50),
@@ -183,7 +183,7 @@ ELSE
  COMMIT TRAN T1
 GO
 
----------------------------- sproc 2 ------------------
+---------------------------- sproc 2 ------------------ (Sierra)
 CREATE PROCEDURE INSERT_BOARDING
 @TranspName varchar(30),
 @Pmail2 varchar(50),
@@ -233,7 +233,7 @@ ELSE
  COMMIT TRAN T1
 GO
 
------------------ synthetic transaction to populate tblBOARDING --------
+----------------- synthetic transaction to populate tblBOARDING -------- (Sierra)
 CREATE PROCEDURE Wrapper_INSERT_BOARDING
 @RUN INT
 AS
@@ -269,7 +269,7 @@ GO
 EXEC Wrapper_INSERT_BOARDING
     @RUN = 3000
     
------------------------ synthetic transaction to populate tblSTOP -----------
+----------------------- synthetic transaction to populate tblSTOP ----------- (Sierra)
 CREATE PROCEDURE Wrapper_INSERT_STOP
 @RUN INT
 AS
@@ -336,7 +336,7 @@ ALTER TABLE tblPASSENGER with nocheck
 ADD CONSTRAINT const_underAge
 CHECK (dbo.proj01_underAge() = 0)
 
--- business rule 2 School buses cannot have any passengers over 22 and must have edu emails
+-- business rule 2 School buses cannot have any passengers over 22 and must have edu emails (Sierra)
 CREATE FUNCTION dbo.proj01_maxPassengers()
 RETURNS INTEGER
 AS
@@ -377,7 +377,7 @@ RETURNS varchar(30)
 	ADD fn_stopPop
 	AS (DBO.fn_stopPop(StopID))
 
--- computed column 2 number of stops in each direction
+-- computed column 2 number of stops in each direction (Sierra)
 CREATE FUNCTION fn_DirectionPop(@PK varchar(30))
 RETURNS varchar(30)
     AS
@@ -393,7 +393,7 @@ RETURNS varchar(30)
 	ADD fn_TopNeighborhood
 	AS (DBO.fn_DirectionPop(DirectionName))
 
--- View1 - ages and names of the youngest five percent of water taxi inspectors
+-- View1 - ages and names of the youngest five percent of water taxi inspectors (Sierra)
 CREATE VIEW vwYoungest_WaterTaxiInspectors
 AS
 SELECT A.EmployeeFirstName, A.EmployeeLastName, A.EmployeeAge FROM
@@ -405,7 +405,7 @@ WHERE ET.EmployeeTypeName = 'water taxi inspector') AS A
 WHERE A.waterTaxiInspector <= 5
 GO
 
--- View2 - top 3 oldest employees of each vehicle type
+-- View2 - top 3 oldest employees of each vehicle type (Sierra)
 CREATE VIEW vwOldest_Employees_VType
 AS
 SELECT A.employeeFirstName, A.employeeLastName, A.EmployeeTypeName, A.EmployeeDOB FROM
@@ -416,7 +416,7 @@ FROM tblEMPLOYEE E
 	WHERE oldEmps <= 3
 GO
 
--- for presentation:
+-- for presentation: (Sierra)
 -- visualization 1
 SELECT A.EmployeeFirstName, A.EmployeeLastName, A.EmployeeAge, A.EmployeeTypeName FROM
         (SELECT E.EmployeeFirstName, E.EmployeeLastName,
