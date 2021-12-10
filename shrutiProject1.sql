@@ -1,3 +1,4 @@
+--SHRUTI CODE
 USE INFO_430_Proj_01
 
 /* POPULATE TRANSPORTATION DATA RAW IF IT DOESN'T EXIST */
@@ -106,11 +107,11 @@ WHILE @RUN > 0
 	END
 GO
 
+-- inserting 5000 employees
 EXEC wrapperInsertEmployee 5000
 
 
 /* Shruti second stored procedure... delete employee from table */
-
 ALTER PROCEDURE deleteEmployee_Proj01
 @Firsty varchar(50), 
 @Lasty varchar(50), 
@@ -145,20 +146,9 @@ AS
 			COMMIT TRAN T1
 GO 
 
-SELECT * from tblEMPLOYEE E
-JOIN tblEMPLOYEE_TYPE ET ON E.EmployeeTypeID = ET.EmployeeTypeID
-ORDER BY EmployeeID DESC
-
-EXEC insertEmployee_Proj01
-@Firsty = 'Tam',
-@Lasty = 'Vangemert',
-@EmpyDOB = '2099-12-01',
-@ETypeName = 'Bus Driver'
-
-
 
 -- Shruti Business Rule 1
--- If Passenger age > 65 then Passenger type = Senior (PASSENGER
+-- If Passenger age > 65 then Passenger type must be Senior
 CREATE FUNCTION dbo.senior_passenger_type_proj01()
 RETURNS INTEGER
 AS
@@ -181,8 +171,8 @@ CHECK (dbo.senior_passenger_type_proj01() = 0)
 GO
 
 
--- Shruti Business Rule 1
--- If Passenger age > 65 then Passenger type = Senior (PASSENGER
+-- Shruti Business Rule 2
+-- If Passenger age < 18 then Passenger type must be minor
 CREATE FUNCTION dbo.minor_passenger_type_proj01()
 RETURNS INTEGER
 AS
@@ -207,7 +197,7 @@ GO
 
 -- Shruti Computed Column 1
 -- Average age of employees
-CREATE FUNCTION EmployeeType_AvgAge_Fn(@ETID INTEGER)
+ALTER FUNCTION EmployeeType_AvgAge_Fn(@ETID INTEGER)
 RETURNS NUMERIC (4, 1)
 AS 
 BEGIN
@@ -221,12 +211,12 @@ END
 GO
 
 
-ALTER TABLE tblEmployeeType
+ALTER TABLE tblEmployee_Type
 ADD FN_PassType_AvgAge
 AS (DBO.EmployeeType_AvgAge_Fn(EmployeeTypeID))
 
 
--- Computed Column 2: Number of transportations (aka rides) for each emloyee 
+-- Shruti Computed Column 2: Number of transportations (aka rides) for each emloyee 
 CREATE FUNCTION Num_Transportations_Emp_FN(@PK INTEGER)
 RETURNS INTEGER 
 AS 
