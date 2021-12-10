@@ -679,7 +679,7 @@ JOIN tblBOARDING B ON TR.TransportationID = B.TransportationID
 GROUP BY VT.VehicleTypeName
 GO
 
---SHRUTI CODE
+------------------------------------------------------------- SHRUTI CODE -------------------------------------------------------------------------------------
 
 /* POPULATE TRANSPORTATION DATA RAW IF IT DOESN'T EXIST */
 IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_COPY_TransportationData')
@@ -914,7 +914,7 @@ ALTER TABLE tblEmployee
 ADD Num_Transportations_Emp_FN
 AS (DBO.Num_Transportations_Emp_FN(EmployeeID))
 
--- KAVYA'S CODE
+-------------------------------------------------------------- KAVYA'S CODE ------------------------------------------------------------------------------------
 
 -- Sproc 1: Insert into Passenger + Populate
 IF EXISTS (SELECT * FROM sys.sysobjects WHERE Name = 'WORKING_PEEPS_Customers')
@@ -971,7 +971,9 @@ ELSE
 GO 
 
 exec insertPassenger
-@Firsty = 'Kavya', 
+@Firsty = '
+
+', 
 @Lasty = 'Iyer', 
 @Birthy = '1999-02-11', 
 @Emaily = 'kavyai@uw.edu', 
